@@ -12,3 +12,7 @@
   width: 1em;
   height: 1em;
 }
+
+.hidden {
+  display: none;
+}
