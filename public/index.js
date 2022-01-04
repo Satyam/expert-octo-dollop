@@ -62,6 +62,11 @@ let loadVendedores = () =>
 let $navItemActive = null;
 const $navbarMenu = D.getElementById('navbarMenu');
 
+const $listVendedores = D.getElementById('listVendedores');
+const $tableVendedores = D.getElementById('tableVendedores');
+const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
+const $tplVendedores = D.getElementById('tplVendedores');
+
 // DOM update functions
 
 // Event handlers
@@ -82,4 +87,14 @@ const onNavbarMenu = (ev) => {
 $navbarMenu.onclick = onNavbarMenu;
 
 // Initial setup
-loadVendedores().then(console.log);
+$listVendedores.classList.remove('hidden');
+loadVendedores().then(() => {
+  stateVendedores.data.forEach((v) => {
+    const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
+    $row.dataset.id = v.id;
+    $row.querySelector('.nombre').textContent = v.nombre;
+    $row.querySelector('.email').textContent = v.email;
+
+    $tbodyVendedores.append($row);
+  });
+});
