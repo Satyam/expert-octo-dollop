@@ -9,16 +9,15 @@ const NOT_FOUND = 404;
 let _db;
 
 export function getDb() {
-  return (
-    _db ??
-    open({
-      filename: join(process.cwd(), 'data', 'db.sqlite'),
-      driver: sqlite3.Database,
-    }).then((db) => {
-      _db = db;
-      return db;
-    })
-  );
+  return _db
+    ? Promise.resolve(_db)
+    : open({
+        filename: join(process.cwd(), 'data', 'db.sqlite'),
+        driver: sqlite3.Database,
+      }).then((db) => {
+        _db = db;
+        return db;
+      });
 }
 
 export function listAll(nombreTabla, camposSalida) {
