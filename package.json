@@ -1,0 +1,26 @@
+{
+  "name": "lacorazon-vainilla",
+  "version": "1.0.0",
+  "description": "Same old La Corazon app with no framework at all (vainillaJS)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Satyam/lacorazon-vainilla.git"
+  },
+  "author": "Daniel Barreiro <satyam@satyam.com.ar> (Satyam)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Satyam/lacorazon-vainilla/issues"
+  },
+  "homepage": "https://github.com/Satyam/lacorazon-vainilla#readme",
+  "dependencies": {
+    "bootstrap": "^5.1.3",
+    "bootstrap-icons": "^1.7.2",
+    "express": "^4.17.2",
+    "nodemon": "^2.0.15"
+  }
+}

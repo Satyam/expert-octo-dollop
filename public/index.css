@@ -1,0 +1,14 @@
+.navbar {
+  background-color: #e4ccaa !important;
+  color: #644240;
+}
+.navbar a {
+  color: #644240;
+}
+.navbar-brand {
+  margin: auto 1em;
+}
+.navbar-brand img {
+  width: 1em;
+  height: 1em;
+}
