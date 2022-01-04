@@ -11,7 +11,6 @@ app.post('/api/*', express.json(), (req, res) => {
   let response;
   switch (req.path.replace('/api/', '')) {
     case 'vendedores':
-      console.log('api', req.body);
       response = vendedores(req.body);
       break;
     case 'ventas':
