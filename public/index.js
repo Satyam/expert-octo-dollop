@@ -56,6 +56,14 @@ const navBar = (() => {
   $navbarMenu.onclick = onNavbarMenu;
 })();
 
+const loading = (() => {
+  const $loading = D.getElementById('loading');
+  return {
+    show: () => show($loading),
+    hide: () => hide($loading),
+  };
+})();
+
 const listVendedores = (() => {
   const $listVendedores = D.getElementById('listVendedores');
   const $tableVendedores = D.getElementById('tableVendedores');
