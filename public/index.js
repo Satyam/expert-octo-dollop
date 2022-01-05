@@ -17,11 +17,11 @@ const hide = ($) => {
 };
 
 const router = {
-  push: (path, title) => {
+  push: (path) => {
     H.pushState({ path }, '', path);
     matchPath(path);
   },
-  replace: (path, title) => {
+  replace: (path) => {
     H.replaceState({ path }, '', path);
     matchPath(path);
   },
@@ -74,11 +74,29 @@ const error = (() => {
     hide: () => hide($error),
   };
 })();
+
 const listVendedores = (() => {
   const $listVendedores = D.getElementById('listVendedores');
   const $tableVendedores = D.getElementById('tableVendedores');
   const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
   const $tplVendedores = D.getElementById('tplVendedores');
+
+  $tbodyVendedores.onclick = (ev) => {
+    ev.preventDefault();
+    const $t = ev.target;
+    const id = $t.closest('tr').dataset.id;
+    switch ($t.dataset.action) {
+      case 'show':
+        router.push(`/vendedor/${id}`);
+        break;
+      case 'edit':
+        router.push(`/vendedor/edit/${id}`);
+        break;
+      case 'delete':
+        router.push(`/vendedor/delete/${id}`);
+        break;
+    }
+  };
 
   const loadVendedores = () => {
     loading.show();
@@ -138,6 +156,47 @@ const listVendedores = (() => {
   };
 })();
 
+const loadVendedor = (id) => {
+  loading.show();
+  return apiService('verify')
+    .then((resp) => {
+      if (resp.ok)
+        return apiService('vendedores', {
+          op: 'get',
+          id,
+        });
+      return Promise.reject('unauthorized');
+    })
+    .then((resp) => {
+      if (resp && resp.ok) return resp.json();
+      return Promise.reject(resp.statusText);
+    })
+    .then((resp) => {
+      if (resp.error) return Promise.reject(resp.error);
+      loading.hide();
+      return resp.data;
+    })
+    .catch((error) => {
+      error.show(error);
+    });
+};
+
+const showVendedor = (() => {
+  const $showVendedor = D.getElementById('showVendedor');
+  const render = ([path, id]) => {
+    loadVendedor(id).then((v) => {
+      $showVendedor.querySelector('#showNombreVendedor').value = v.nombre;
+      $showVendedor.querySelector('#showEmailVendedor').value = v.email;
+      show($showVendedor);
+    });
+  };
+  return {
+    render,
+    hide: () => hide($showVendedor),
+    path: /\/vendedor\/([^\/]+)/,
+  };
+})();
+
 const notFound = (() => {
   const $notFound = D.getElementById('notFound');
   return {
@@ -160,6 +219,7 @@ const notFound = (() => {
 
 const modules = [
   listVendedores,
+  showVendedor,
   /* notFound should always be last */
   notFound,
 ];
