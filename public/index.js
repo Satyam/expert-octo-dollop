@@ -104,19 +104,28 @@ const listVendedores = (() => {
       });
   };
 
+  const fillRow = ($row, v) => {
+    $row.dataset.id = v.id;
+    $row.querySelector('.nombre').textContent = v.nombre;
+    $row.querySelector('.email').textContent = v.email;
+  };
   const render = () => {
     setTitle('Vendedores');
     show($listVendedores);
-    $tbodyVendedores.querySelectorAll('tr').forEach((tr) => {
-      console.log(tr.dataset.id);
-    });
     loadVendedores().then((vendedores) => {
-      vendedores.forEach((v) => {
-        const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
-        $row.dataset.id = v.id;
-        $row.querySelector('.nombre').textContent = v.nombre;
-        $row.querySelector('.email').textContent = v.email;
+      const $$tr = $tbodyVendedores.querySelectorAll('tr');
+      $$tr.forEach(($row, index) => {
+        if (index >= vendedores.length) {
+          hide($row);
+        } else {
+          show($row);
+          fillRow($row, vendedores[index]);
+        }
+      });
 
+      vendedores.slice($$tr.length).forEach((v) => {
+        const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
+        fillRow($row, v);
         $tbodyVendedores.append($row);
       });
     });
