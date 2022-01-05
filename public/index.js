@@ -64,6 +64,16 @@ const loading = (() => {
   };
 })();
 
+const error = (() => {
+  const $error = D.getElementById('error');
+  return {
+    show: (msg) => {
+      $error.querySelector('.msg').textContent = msg;
+      show($error);
+    },
+    hide: () => hide($error),
+  };
+})();
 const listVendedores = (() => {
   const $listVendedores = D.getElementById('listVendedores');
   const $tableVendedores = D.getElementById('tableVendedores');
@@ -103,6 +113,9 @@ const listVendedores = (() => {
   const render = () => {
     setTitle('Vendedores');
     show($listVendedores);
+    $tbodyVendedores.querySelectorAll('tr').forEach((tr) => {
+      console.log(tr.dataset.id);
+    });
     loadVendedores().then(() => {
       state.data.forEach((v) => {
         const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
