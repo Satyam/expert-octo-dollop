@@ -21,13 +21,19 @@ export function getDb() {
 }
 
 export function listAll(nombreTabla, camposSalida) {
-  return getDb().then((db) =>
-    db.all(
-      `select ${
-        camposSalida ? camposSalida.join(',') : '*'
-      } from ${nombreTabla}`
+  return getDb()
+    .then((db) =>
+      db.all(
+        `select ${
+          camposSalida ? camposSalida.join(',') : '*'
+        } from ${nombreTabla}`
+      )
     )
-  );
+    .then((data) => ({ data }))
+    .catch((err) => ({
+      error: err.code,
+      data: err.message,
+    }));
 }
 
 export function rawGetById(nombreTabla, id, camposSalida) {
