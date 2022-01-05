@@ -3,26 +3,27 @@ const D = document;
 const W = window;
 const H = W.history;
 
+const HIDDEN = 'hidden';
 // Helpers
-
-const titles = {
-  '/usuarios': 'Usuarios',
-  '/ventas': 'Ventas',
-  '/vendedores': 'Vendedores',
-  '/distribuidores': 'Distribuidores',
-};
 
 const setTitle = (title) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
+const show = ($) => {
+  $.classList.remove(HIDDEN);
+};
+const hide = ($) => {
+  $.classList.add(HIDDEN);
+};
+
 const router = {
   push: (path, title) => {
     H.pushState({ path }, '', path);
-    setTitle(title ?? titles[path]);
+    matchPath(path);
   },
   replace: (path, title) => {
     H.replaceState({ path }, '', path);
-    setTitle(title ?? titles[path]);
+    matchPath(path);
   },
 };
 
@@ -92,7 +93,8 @@ const listVendedores = (() => {
       });
 
   const render = () => {
-    $listVendedores.classList.remove('hidden');
+    setTitle('Vendedores');
+    show($listVendedores);
     loadVendedores().then(() => {
       state.data.forEach((v) => {
         const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
@@ -104,18 +106,23 @@ const listVendedores = (() => {
       });
     });
   };
-  const hide = () => {
-    $listVendedores.classList.add('hidden');
-  };
-
   return {
     getState: () => state,
     loadVendedores,
     render,
-    hide,
+    hide: () => hide($listVendedores),
+    path: /\/vendedores/,
   };
 })();
 
+const notFound = (() => {
+  const $notFound = D.getElementById('notFound');
+  return {
+    render: () => show($notFound),
+    hide: () => hide($notFound),
+    path: /.*/,
+  };
+})();
 // State accessor functions (getters and setters)
 
 // DOM node references
@@ -128,6 +135,26 @@ const listVendedores = (() => {
 
 // Initial setup
 
-setTitle(titles[location.pathname]);
+const modules = [
+  listVendedores,
+  /* notFound should always be last */
+  notFound,
+];
 
-listVendedores.render();
+let currentModule = null;
+
+function matchPath(path) {
+  modules.some((module) => {
+    const match = module.path.exec(path);
+    if (match) {
+      if (!currentModule || module !== currentModule) {
+        currentModule?.hide();
+        module.render(match);
+        currentModule = module;
+        return true;
+      }
+    }
+  });
+}
+
+matchPath(location.pathname);
