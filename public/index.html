@@ -48,6 +48,15 @@
           </ul>
         </div>
       </nav>
+      <div id="notFound" class="hidden">
+        <div class="alert alert-warning" role="alert">Path not found</div>
+      </div>
+      <div id="loading" class="alert alert-secondary hidden" role="alert">
+        <i class="bi bi-hourglass-split"></i> Loading ...
+      </div>
+      <div id="error" class="alert alert-danger hidden" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span class="msg" />
+      </div>
       <div id="listVendedores" class="hidden">
         <template id="tplVendedores">
           <tr>
@@ -80,15 +89,6 @@
           </thead>
           <tbody></tbody>
         </table>
-      </div>
-      <div id="notFound" class="hidden">
-        <div class="alert alert-warning" role="alert">Path not found</div>
-      </div>
-      <div id="loading" class="alert alert-secondary hidden" role="alert">
-        <i class="bi bi-hourglass-split"></i> Loading ...
-      </div>
-      <div id="error" class="alert alert-danger hidden" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> <span class="msg" />
       </div>
     </div>
   </body>
