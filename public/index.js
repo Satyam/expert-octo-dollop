@@ -80,35 +80,29 @@ const listVendedores = (() => {
   const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
   const $tplVendedores = D.getElementById('tplVendedores');
 
-  const state = {
-    loading: true,
-    authenticated: false,
-    error: false,
-    data: null,
-  };
-
-  const loadVendedores = () =>
-    apiService('verify')
+  const loadVendedores = () => {
+    loading.show();
+    return apiService('verify')
       .then((resp) => {
-        state.authenticated = resp.ok;
         if (resp.ok)
           return apiService('vendedores', {
             op: 'list',
           });
+        return Promise.reject('unauthorized');
       })
       .then((resp) => {
-        state.error = !resp.ok;
         if (resp && resp.ok) return resp.json();
+        return Promise.reject(resp.statusText);
       })
-      .then((data) => {
-        state.data = data ?? null;
-        state.loading = false;
+      .then((resp) => {
+        if (resp.error) return Promise.reject(resp.error);
+        loading.hide();
+        return resp.data;
       })
-      .catch(() => {
-        state.loading = false;
-        state.error = true;
-        state.data = null;
+      .catch((error) => {
+        error.show(error);
       });
+  };
 
   const render = () => {
     setTitle('Vendedores');
@@ -116,8 +110,8 @@ const listVendedores = (() => {
     $tbodyVendedores.querySelectorAll('tr').forEach((tr) => {
       console.log(tr.dataset.id);
     });
-    loadVendedores().then(() => {
-      state.data.forEach((v) => {
+    loadVendedores().then((vendedores) => {
+      vendedores.forEach((v) => {
         const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
         $row.dataset.id = v.id;
         $row.querySelector('.nombre').textContent = v.nombre;
@@ -128,7 +122,6 @@ const listVendedores = (() => {
     });
   };
   return {
-    getState: () => state,
     loadVendedores,
     render,
     hide: () => hide($listVendedores),
