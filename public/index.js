@@ -84,17 +84,20 @@ const listVendedores = (() => {
   $tbodyVendedores.onclick = (ev) => {
     ev.preventDefault();
     const $t = ev.target;
-    const id = $t.closest('tr').dataset.id;
-    switch ($t.dataset.action) {
-      case 'show':
-        router.push(`/vendedor/${id}`);
-        break;
-      case 'edit':
-        router.push(`/vendedor/edit/${id}`);
-        break;
-      case 'delete':
-        router.push(`/vendedor/delete/${id}`);
-        break;
+    const action = $t.closest('[data-action]').dataset.action;
+    if (action) {
+      const id = $t.closest('tr').dataset.id;
+      switch (action) {
+        case 'show':
+          router.push(`/vendedor/${id}`);
+          break;
+        case 'edit':
+          router.push(`/vendedor/edit/${id}`);
+          break;
+        case 'delete':
+          router.push(`/vendedor/delete/${id}`);
+          break;
+      }
     }
   };
 
@@ -193,7 +196,7 @@ const showVendedor = (() => {
   return {
     render,
     hide: () => hide($showVendedor),
-    path: /\/vendedor\/([^\/]+)/,
+    path: /\/vendedor\/([^\/]+)$/,
   };
 })();
 
@@ -241,3 +244,7 @@ function matchPath(path) {
 }
 
 matchPath(location.pathname);
+
+window.onpopstate = () => {
+  matchPath(location.pathname);
+};
