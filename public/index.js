@@ -17,13 +17,13 @@ const hide = ($) => {
 };
 
 const router = {
-  push: (path) => {
+  push: (path, refresh) => {
     H.pushState({ path }, '', path);
-    matchPath(path);
+    matchPath(path, refresh);
   },
-  replace: (path) => {
+  replace: (path, refresh) => {
     H.replaceState({ path }, '', path);
-    matchPath(path);
+    matchPath(path, refresh);
   },
 };
 
@@ -166,7 +166,18 @@ const listVendedores = (() => {
           confirmar
             .ask('¿Quiere borrar este vendedor?', null, true)
             .then((confirma) => {
-              if (confirma) router.push(`/vendedor/delete/${id}`);
+              return (
+                confirma &&
+                apiService('vendedores', {
+                  op: 'del',
+                  id,
+                })
+              );
+            })
+            .then((result) => {
+              if (result !== false) {
+                router.replace(`/vendedores`, true);
+              }
             });
           break;
       }
@@ -235,17 +246,6 @@ const notFound = (() => {
     path: /.*/,
   };
 })();
-// State accessor functions (getters and setters)
-
-// DOM node references
-
-// DOM update functions
-
-// Event handlers
-
-// Event handler bindings
-
-// Initial setup
 
 const modules = [
   listVendedores,
@@ -256,11 +256,11 @@ const modules = [
 
 let currentModule = null;
 
-function matchPath(path) {
+function matchPath(path, refresh) {
   modules.some((module) => {
     const match = module.path.exec(path);
     if (match) {
-      if (!currentModule || module !== currentModule) {
+      if (refresh || !currentModule || module !== currentModule) {
         currentModule?.hide();
         module.render(match);
         currentModule = module;
