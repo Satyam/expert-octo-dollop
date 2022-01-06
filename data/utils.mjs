@@ -45,7 +45,10 @@ export function rawGetById(nombreTabla, id, camposSalida) {
 
 export function getById(nombreTabla, id, camposSalida) {
   return rawGetById(nombreTabla, id, camposSalida)
-    .then((data) => ({ data }))
+    .then((data) => {
+      if (data) return { data };
+      return Promise.reject({ code: 404, message: 'Not found' });
+    })
     .catch((err) => ({
       error: err.code,
       data: err.message,
