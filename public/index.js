@@ -238,6 +238,55 @@ const showVendedor = (() => {
   };
 })();
 
+const editVendedor = (() => {
+  const $editVendedor = D.getElementById('editVendedor');
+  const $form = $editVendedor.querySelector('form');
+  const $submit = $editVendedor.querySelector('button');
+  $form.onsubmit = (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    debugger;
+    if ($form.checkValidity()) {
+      const data = Array.from($form.elements).reduce(
+        (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
+        {}
+      );
+      console.log({ data });
+    } else {
+    }
+    $form.classList.add('was-validated');
+  };
+
+  $form.querySelectorAll('input').forEach((input) => {
+    input.onchange = (ev) => {
+      $submit.disabled = !Array.from($form.querySelectorAll('input')).some(
+        ($i) => $i.value !== $i.dataset.value
+      );
+    };
+  });
+
+  const setFields = (v) => {
+    Array.from($form.elements).forEach(($input) => {
+      $input.dataset.value = $input.value = v[$input.name];
+    });
+  };
+
+  const render = ([path, id]) => {
+    apiService('vendedores', {
+      op: 'get',
+      id,
+    }).then((v) => {
+      setFields(v);
+      show($editVendedor);
+    });
+  };
+  return {
+    render,
+    hide: () => hide($editVendedor),
+    path: /\/vendedor\/edit\/([^\/]+)$/,
+  };
+})();
+
 const notFound = (() => {
   const $notFound = D.getElementById('notFound');
   return {
@@ -250,6 +299,7 @@ const notFound = (() => {
 const modules = [
   listVendedores,
   showVendedor,
+  editVendedor,
   /* notFound should always be last */
   notFound,
 ];

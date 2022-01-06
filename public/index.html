@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/icons/bootstrap-icons.css" />
     <link rel="stylesheet" href="/index.css" />
     <link rel="icon" sizes="200x200" href="/La Corazon.png" type="image/png" />
-    <script src="/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+    <!-- <script src="/bootstrap/js/bootstrap.bundle.min.js" defer></script> -->
     <script src="/index.js" defer></script>
   </head>
   <body>
@@ -166,12 +166,46 @@
               <input
                 type="email"
                 class="form-control email"
-                id="showEmailVendedor"
                 placeholder="Email"
                 readonly
               />
             </div>
           </label>
+        </form>
+      </div>
+
+      <div id="editVendedor" class="hidden">
+        <h1>Vendedor</h1>
+        <form novalidate>
+          <input type="hidden" name="id" />
+          <label class="form-group row">
+            <div class="col-sm-2 col-form-label">Nombre</div>
+            <div class="col-sm-10">
+              <input
+                name="nombre"
+                class="form-control"
+                placeholder="Nombre"
+                required
+              />
+              <div class="invalid-feedback">Debe dar un nombre</div>
+            </div>
+          </label>
+          <label class="form-group row">
+            <div class="col-sm-2 col-form-label">Email</div>
+            <div class="col-sm-10">
+              <input
+                type="email"
+                name="email"
+                class="form-control email"
+                placeholder="Email"
+                required
+              />
+              <div class="invalid-feedback">Debe dar un nombre</div>
+            </div>
+          </label>
+          <button type="submit" class="btn btn-primary" disabled>
+            Agregar
+          </button>
         </form>
       </div>
     </div>
