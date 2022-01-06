@@ -57,6 +57,40 @@
       <div id="error" class="alert alert-danger hidden" role="alert">
         <i class="bi bi-exclamation-triangle"></i> <span class="msg" />
       </div>
+      <div
+        class="modal fade"
+        id="confirm"
+        tabindex="-1"
+        role="dialog"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Está seguro</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-action="no"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">...</div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-danger yes"
+                data-action="yes"
+              >
+                Aceptar
+              </button>
+              <button type="button" class="btn btn-secondary" data-action="no">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="listVendedores" class="hidden">
         <template id="tplVendedores">
           <tr>

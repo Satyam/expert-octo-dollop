@@ -98,6 +98,48 @@ const error = (() => {
   };
 })();
 
+const confirmar = (() => {
+  const $confirm = D.getElementById('confirm');
+
+  const hide = () => {
+    $confirm.classList.remove('show');
+    $confirm.style.display = 'none';
+  };
+  const ask = (msg, header, danger) =>
+    new Promise((resolve) => {
+      $confirm.querySelector('.modal-body').textContent = msg;
+      $confirm.querySelector('.modal-title').textContent =
+        header ?? '¿Está seguro?';
+      const $headerClass = $confirm.querySelector('.modal-header').classList;
+      $headerClass.toggle('bg-danger', danger);
+      $headerClass.toggle('text-white', danger);
+      $yesClass = $confirm.querySelector('.yes').classList;
+      $yesClass.toggle('btn-danger', danger);
+      $yesClass.toggle('btn-primary', !danger);
+
+      $confirm.style.display = 'block';
+      $confirm.classList.add('show');
+      $confirm.onclick = (ev) => {
+        ev.preventDefault();
+        const $t = ev.target;
+        switch ($t.dataset.action) {
+          case 'yes':
+            hide();
+            resolve(true);
+            break;
+          case 'no':
+            hide();
+            resolve(false);
+            break;
+        }
+      };
+    });
+  return {
+    ask,
+    hide,
+  };
+})();
+
 const listVendedores = (() => {
   const $listVendedores = D.getElementById('listVendedores');
   const $tableVendedores = D.getElementById('tableVendedores');
