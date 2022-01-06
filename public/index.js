@@ -27,7 +27,7 @@ const router = {
   },
 };
 
-const apiService = (service, op) =>
+const post = (service, op) =>
   fetch(`${window.origin}/api/${service}`, {
     method: 'POST',
     headers: {
@@ -35,6 +35,28 @@ const apiService = (service, op) =>
     },
     body: JSON.stringify(op),
   });
+
+const apiService = (service, op) => {
+  loading.show();
+  return post('verify')
+    .then((resp) => {
+      if (resp.ok) return post(service, op);
+      return Promise.reject('unauthorized');
+    })
+    .then((resp) => {
+      if (resp && resp.ok) return resp.json();
+      return Promise.reject(resp.statusText);
+    })
+    .then((resp) => {
+      if (resp.error) return Promise.reject(resp.error);
+      loading.hide();
+      return resp.data;
+    })
+    .catch((error) => {
+      error.show(error);
+    });
+};
+
 // Application state
 const navBar = (() => {
   let $navItemActive = null;
@@ -101,30 +123,6 @@ const listVendedores = (() => {
     }
   };
 
-  const loadVendedores = () => {
-    loading.show();
-    return apiService('verify')
-      .then((resp) => {
-        if (resp.ok)
-          return apiService('vendedores', {
-            op: 'list',
-          });
-        return Promise.reject('unauthorized');
-      })
-      .then((resp) => {
-        if (resp && resp.ok) return resp.json();
-        return Promise.reject(resp.statusText);
-      })
-      .then((resp) => {
-        if (resp.error) return Promise.reject(resp.error);
-        loading.hide();
-        return resp.data;
-      })
-      .catch((error) => {
-        error.show(error);
-      });
-  };
-
   const fillRow = ($row, v) => {
     $row.dataset.id = v.id;
     $row.querySelector('.nombre').textContent = v.nombre;
@@ -133,7 +131,9 @@ const listVendedores = (() => {
   const render = () => {
     setTitle('Vendedores');
     show($listVendedores);
-    loadVendedores().then((vendedores) => {
+    apiService('vendedores', {
+      op: 'list',
+    }).then((vendedores) => {
       const $$tr = $tbodyVendedores.querySelectorAll('tr');
       $$tr.forEach(($row, index) => {
         if (index >= vendedores.length) {
@@ -152,42 +152,19 @@ const listVendedores = (() => {
     });
   };
   return {
-    loadVendedores,
     render,
     hide: () => hide($listVendedores),
     path: /\/vendedores/,
   };
 })();
 
-const loadVendedor = (id) => {
-  loading.show();
-  return apiService('verify')
-    .then((resp) => {
-      if (resp.ok)
-        return apiService('vendedores', {
-          op: 'get',
-          id,
-        });
-      return Promise.reject('unauthorized');
-    })
-    .then((resp) => {
-      if (resp && resp.ok) return resp.json();
-      return Promise.reject(resp.statusText);
-    })
-    .then((resp) => {
-      if (resp.error) return Promise.reject(resp.error);
-      loading.hide();
-      return resp.data;
-    })
-    .catch((error) => {
-      error.show(error);
-    });
-};
-
 const showVendedor = (() => {
   const $showVendedor = D.getElementById('showVendedor');
   const render = ([path, id]) => {
-    loadVendedor(id).then((v) => {
+    apiService('vendedores', {
+      op: 'get',
+      id,
+    }).then((v) => {
       $showVendedor.querySelector('.nombre').value = v.nombre;
       $showVendedor.querySelector('.email').value = v.email;
       show($showVendedor);
