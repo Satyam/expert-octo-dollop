@@ -169,7 +169,7 @@ const listVendedores = (() => {
               return (
                 confirma &&
                 apiService('vendedores', {
-                  op: 'del',
+                  op: 'remove',
                   id,
                 })
               );

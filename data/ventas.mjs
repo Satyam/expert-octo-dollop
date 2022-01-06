@@ -25,7 +25,7 @@ export default function ({ op, ...rest }) {
           order by fecha, id`
             )
       ),
-    del: ({ id }) => deleteById(TABLE, id),
+    remove: ({ id }) => deleteById(TABLE, id),
     get: ({ id }) => getById(TABLE, id),
     create: ({ data }) => createWithCuid(TABLE, data),
     update: ({ id, data }) => updateById(TABLE, id, data),

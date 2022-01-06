@@ -24,7 +24,7 @@ const safeFields = ['id', 'nombre', 'email'];
 export default function ({ op, ...rest }) {
   const fns = {
     list: () => listAll(TABLE, safeFields),
-    del: ({ id }) => deleteById(TABLE, id),
+    remove: ({ id }) => deleteById(TABLE, id),
     get: ({ id }) => getById(TABLE, id, safeFields),
     create: ({ data }) => createWithCuid(TABLE, hashPassword(data), safeFields),
     update: ({ id, data }) =>
