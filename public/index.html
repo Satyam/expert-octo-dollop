@@ -92,18 +92,27 @@
         </div>
       </div>
       <div id="listVendedores" class="hidden">
+        <h1>Vendedores</h1>
         <template id="tplVendedores">
           <tr>
-            <td title="Ver detalles" data-action="show">
+            <td title="Ver detalles" data-action="show" class="action">
               <a href="#" class="nombre"></a>
             </td>
             <td class="email"></td>
-            <td>
+            <td class="text-center">
               <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-secondary" data-action="edit">
+                <button
+                  class="btn btn-outline-secondary action"
+                  data-action="edit"
+                  title="Modificar"
+                >
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-outline-danger" data-action="delete">
+                <button
+                  class="btn btn-outline-danger action"
+                  data-action="delete"
+                  title="Borrar"
+                >
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -114,11 +123,20 @@
           id="tableVendedores"
           class="table table-striped table-hover table-bordered table-responsive table-sm"
         >
-          <thead>
+          <thead class="bg-secondary text-white border border-dark">
             <tr>
               <th>Nombre</th>
               <th>E-mail</th>
-              <th></th>
+              <th class="text-center">
+                <button
+                  type="button"
+                  class="btn btn-primary action"
+                  data-action="add"
+                  title="Agregar"
+                >
+                  <i class="bi bi-person-plus"></i>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody></tbody>

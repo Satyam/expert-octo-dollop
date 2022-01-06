@@ -146,13 +146,16 @@ const listVendedores = (() => {
   const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
   const $tplVendedores = D.getElementById('tplVendedores');
 
-  $tbodyVendedores.onclick = (ev) => {
+  $tableVendedores.onclick = (ev) => {
     ev.preventDefault();
     const $t = ev.target;
-    const action = $t.closest('[data-action]').dataset.action;
+    const action = $t.closest('.action')?.dataset.action;
     if (action) {
       const id = $t.closest('tr').dataset.id;
       switch (action) {
+        case 'add':
+          router.push('/vendedor/edit/0');
+          break;
         case 'show':
           router.push(`/vendedor/${id}`);
           break;
