@@ -188,8 +188,8 @@ const showVendedor = (() => {
   const $showVendedor = D.getElementById('showVendedor');
   const render = ([path, id]) => {
     loadVendedor(id).then((v) => {
-      $showVendedor.querySelector('#showNombreVendedor').value = v.nombre;
-      $showVendedor.querySelector('#showEmailVendedor').value = v.email;
+      $showVendedor.querySelector('.nombre').value = v.nombre;
+      $showVendedor.querySelector('.email').value = v.email;
       show($showVendedor);
     });
   };
