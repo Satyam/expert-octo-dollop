@@ -48,12 +48,13 @@ const apiService = (service, op) => {
       return Promise.reject(resp.statusText);
     })
     .then((resp) => {
-      if (resp.error) return Promise.reject(resp.error);
+      if (resp.error) return Promise.reject(resp.data);
       loading.hide();
       return resp.data;
     })
-    .catch((error) => {
-      error.show(error);
+    .catch((err) => {
+      loading.hide();
+      error.show(err);
     });
 };
 
