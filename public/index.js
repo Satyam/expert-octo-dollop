@@ -121,8 +121,8 @@ const confirmar = (() => {
       $confirm.classList.add('show');
       $confirm.onclick = (ev) => {
         ev.preventDefault();
-        const $t = ev.target;
-        switch ($t.dataset.action) {
+        const $t = ev.target.closest('.action');
+        switch ($t?.dataset.action) {
           case 'yes':
             hide();
             resolve(true);
@@ -163,7 +163,11 @@ const listVendedores = (() => {
           router.push(`/vendedor/edit/${id}`);
           break;
         case 'delete':
-          router.push(`/vendedor/delete/${id}`);
+          confirmar
+            .ask('¿Quiere borrar este vendedor?', null, true)
+            .then((confirma) => {
+              if (confirma) router.push(`/vendedor/delete/${id}`);
+            });
           break;
       }
     }
