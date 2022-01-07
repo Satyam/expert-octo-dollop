@@ -58,7 +58,7 @@ const apiService = (service, op) => {
     });
 };
 
-const handleAccordion = ($a) => {
+const handleAccordion = ($a, fn) => {
   const IS_OPEN = 'is-open';
   const openPanel = ($panel) => {
     if (!$panel) return;
@@ -67,6 +67,9 @@ const handleAccordion = ($a) => {
       .querySelector('i')
       .classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
     $panel.nextElementSibling.classList.add('show');
+    if (typeof fn === 'function') {
+      fn($panel.dataset.panel, $panel.nextElementSibling);
+    }
   };
 
   const closePanel = ($panel) => {
@@ -255,7 +258,18 @@ const listVendedores = (() => {
 const showVendedor = (() => {
   const $showVendedor = D.getElementById('showVendedor');
 
-  handleAccordion($showVendedor.querySelector('.accordion'));
+  handleAccordion(
+    $showVendedor.querySelector('.accordion'),
+    (panel, $panelBody) => {
+      console.log(panel, $panelBody);
+      switch (panel) {
+        case 'ventas':
+          break;
+        case 'consigna':
+          break;
+      }
+    }
+  );
 
   const render = ([path, id]) => {
     apiService('vendedores', {
