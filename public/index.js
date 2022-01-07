@@ -58,6 +58,39 @@ const apiService = (service, op) => {
     });
 };
 
+const handleAccordion = ($a) => {
+  const IS_OPEN = 'is-open';
+  const openPanel = ($panel) => {
+    if (!$panel) return;
+    $panel.classList.add(IS_OPEN);
+    $panel
+      .querySelector('i')
+      .classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
+    $panel.nextElementSibling.classList.add('show');
+  };
+
+  const closePanel = ($panel) => {
+    if (!$panel) return;
+    $panel.classList.remove(IS_OPEN);
+    $panel
+      .querySelector('i')
+      .classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
+    $panel.nextElementSibling.classList.remove('show');
+  };
+
+  $a.onclick = (ev) => {
+    ev.preventDefault();
+    const $panel = ev.target.closest('.card-header');
+    if (!$panel) return;
+    if ($panel.classList.contains(IS_OPEN)) {
+      closePanel($panel);
+    } else {
+      closePanel($a.querySelector('.is-open'));
+      openPanel($panel);
+    }
+  };
+};
+
 // Application state
 const navBar = (() => {
   let $navItemActive = null;
@@ -221,6 +254,9 @@ const listVendedores = (() => {
 
 const showVendedor = (() => {
   const $showVendedor = D.getElementById('showVendedor');
+
+  handleAccordion($showVendedor.querySelector('.accordion'));
+
   const render = ([path, id]) => {
     apiService('vendedores', {
       op: 'get',
