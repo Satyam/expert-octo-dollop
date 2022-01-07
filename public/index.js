@@ -242,44 +242,58 @@ const editVendedor = (() => {
   const $editVendedor = D.getElementById('editVendedor');
   const $form = $editVendedor.querySelector('form');
   const $submit = $editVendedor.querySelector('button');
+
+  const setFields = (v) => {
+    Array.from($form.elements).forEach(($input) => {
+      $input.dataset.value = $input.value = v ? v[$input.name] : '';
+    });
+  };
+
   $form.onsubmit = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    debugger;
     if ($form.checkValidity()) {
       const data = Array.from($form.elements).reduce(
         (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
         {}
       );
-      console.log({ data });
-    } else {
+
+      apiService('vendedores', {
+        op: !!data.id ? 'update' : 'create',
+        id: data.id,
+        data,
+      }).then((data) => {
+        if (data) setFields(data);
+      });
     }
     $form.classList.add('was-validated');
   };
 
   $form.querySelectorAll('input').forEach((input) => {
-    input.onchange = (ev) => {
+    input.onkeydown = (ev) => {
+      $form.classList.remove('was-validated');
       $submit.disabled = !Array.from($form.querySelectorAll('input')).some(
         ($i) => $i.value !== $i.dataset.value
       );
     };
   });
 
-  const setFields = (v) => {
-    Array.from($form.elements).forEach(($input) => {
-      $input.dataset.value = $input.value = v[$input.name];
-    });
+  const render = ([path, id]) => {
+    $form.classList.remove('was-validated');
+    if (id === '0') {
+      setFields();
+      show($editVendedor);
+    } else {
+      apiService('vendedores', {
+        op: 'get',
+        id,
+      }).then((v) => {
+        setFields(v);
+        show($editVendedor);
+      });
+    }
   };
 
-  const render = ([path, id]) => {
-    apiService('vendedores', {
-      op: 'get',
-      id,
-    }).then((v) => {
-      setFields(v);
-      show($editVendedor);
-    });
-  };
   return {
     render,
     hide: () => hide($editVendedor),
@@ -305,19 +319,22 @@ const modules = [
 ];
 
 let currentModule = null;
+let currentPath = '';
 
 function matchPath(path, refresh) {
-  modules.some((module) => {
-    const match = module.path.exec(path);
-    if (match) {
-      if (refresh || !currentModule || module !== currentModule) {
+  error.hide();
+  if (refresh || path !== currentPath) {
+    currentPath = path;
+    modules.some((module) => {
+      const match = module.path.exec(path);
+      if (match) {
         currentModule?.hide();
         module.render(match);
         currentModule = module;
         return true;
       }
-    }
-  });
+    });
+  }
 }
 
 matchPath(location.pathname);
