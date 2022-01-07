@@ -310,7 +310,7 @@ const notFound = (() => {
   return {
     render: () => show($notFound),
     hide: () => hide($notFound),
-    path: /.*/,
+    path: /\/.+/,
   };
 })();
 
