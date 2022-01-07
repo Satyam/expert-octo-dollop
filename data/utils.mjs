@@ -55,6 +55,23 @@ export function getById(nombreTabla, id, camposSalida) {
     }));
 }
 
+const replyOneChange = (nombreTabla, id, camposSalida, query) =>
+  getDb()
+    .then(query)
+    .then((response) =>
+      response.changes === 1
+        ? rawGetById(nombreTabla, id ?? response.lastID, camposSalida)
+        : Promise.reject({
+            code: SQLITE_ERROR,
+            message: 'No changes made',
+          })
+    )
+    .then((data) => ({ data }))
+    .catch((err) => ({
+      error: err.code,
+      data: err.message,
+    }));
+
 export function createWithAutoId(
   nombreTabla,
   fila,
@@ -64,22 +81,13 @@ export function createWithAutoId(
   const { id: _, ...rest } = fila;
   const fields = Object.keys(rest);
   const values = Object.values(rest);
-  return getDb().then((db) =>
-    db
-      .run(
-        `insert into ${nombreTabla} (${fields}) values (${Array(fields.length)
-          .fill('?')
-          .join(',')})`,
-        values
-      )
-      .then((response) => ({
-        data: rawGetById(nombreTabla, response.lastID, camposSalida),
-      }))
-
-      .catch((err) => ({
-        error: err.code,
-        data: err.message,
-      }))
+  return replyOneChange(nombreTabla, null, camposSalida, (db) =>
+    db.run(
+      `insert into ${nombreTabla} (${fields}) values (${Array(fields.length)
+        .fill('?')
+        .join(',')})`,
+      values
+    )
   );
 }
 
@@ -93,30 +101,15 @@ export function createWithCuid(
   const { id: _, ...rest } = fila;
   const fields = Object.keys(rest);
   const values = Object.values(rest);
-  return getDb().then((db) =>
-    db
-      .run(
-        `insert into ${nombreTabla} (id, ${fields.join(',')}) values (${Array(
-          fields.length + 1
-        )
-          .fill('?')
-          .join(',')})`,
-        [id, ...values]
+  return replyOneChange(nombreTabla, id, camposSalida, (db) =>
+    db.run(
+      `insert into ${nombreTabla} (id, ${fields.join(',')}) values (${Array(
+        fields.length + 1
       )
-      .then((response) =>
-        response.changes === 1
-          ? {
-              data: rawGetById(nombreTabla, id, camposSalida),
-            }
-          : {
-              error: SQLITE_ERROR,
-              data: 'no changes',
-            }
-      )
-      .catch((err) => ({
-        error: err.code,
-        data: err.message,
-      }))
+        .fill('?')
+        .join(',')})`,
+      [id, ...values]
+    )
   );
 }
 
@@ -129,30 +122,15 @@ export function updateById(
 ) {
   const fields = Object.keys(fila);
   const values = Object.values(fila);
-  return getDb().then((db) =>
-    db
-      .run(
-        `update ${nombreTabla}  set (${fields.join(',')}) = (${Array(
-          fields.length
-        )
-          .fill('?')
-          .join(',')})  where id = ?`,
-        [...values, id]
+  return replyOneChange(nombreTabla, id, camposSalida, (db) =>
+    db.run(
+      `update ${nombreTabla}  set (${fields.join(',')}) = (${Array(
+        fields.length
       )
-      .then((response) =>
-        response.changes === 1
-          ? {
-              data: rawGetById(nombreTabla, id, camposSalida),
-            }
-          : {
-              error: NOT_FOUND,
-              data: 'not found',
-            }
-      )
-      .catch((err) => ({
-        error: err.code,
-        data: err.message,
-      }))
+        .fill('?')
+        .join(',')})  where id = ?`,
+      [...values, id]
+    )
   );
 }
 
