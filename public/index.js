@@ -281,6 +281,8 @@ const editVendedor = (() => {
   const render = ([path, id]) => {
     $form.classList.remove('was-validated');
     if (id === '0') {
+      $form.querySelector('.btn').textContent = 'Agregar';
+      $editVendedor.querySelector('h1').textContent = 'Agregar vendedor';
       setFields();
       show($editVendedor);
     } else {
@@ -288,6 +290,8 @@ const editVendedor = (() => {
         op: 'get',
         id,
       }).then((v) => {
+        $form.querySelector('.btn').textContent = 'Modificar';
+        $editVendedor.querySelector('h1').textContent = 'Modificar vendedor';
         setFields(v);
         show($editVendedor);
       });
