@@ -191,7 +191,7 @@ const listVendedores = (() => {
       const id = $t.closest('tr').dataset.id;
       switch (action) {
         case 'add':
-          router.push('/vendedor/edit/0');
+          router.push('/vendedor/new');
           break;
         case 'show':
           router.push(`/vendedor/${id}`);
@@ -252,7 +252,6 @@ const listVendedores = (() => {
   return {
     render,
     hide: () => hide($listVendedores),
-    path: /\/vendedores/,
   };
 })();
 
@@ -272,7 +271,7 @@ const showVendedor = (() => {
     }
   );
 
-  const render = ([path, id]) => {
+  const render = ({ id }) => {
     apiService('vendedores', {
       op: 'get',
       id,
@@ -285,7 +284,6 @@ const showVendedor = (() => {
   return {
     render,
     hide: () => hide($showVendedor),
-    path: /\/vendedor\/([^\/]+)$/,
   };
 })();
 
@@ -341,15 +339,9 @@ const editVendedor = (() => {
     };
   }
 
-  const render = ([path, id]) => {
+  const render = ({ id }) => {
     $form.classList.remove('was-validated');
-    if (id === '0') {
-      $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
-      $editVendedor.getElementsByTagName('h1')[0].textContent =
-        'Agregar vendedor';
-      setFields();
-      show($editVendedor);
-    } else {
+    if (id) {
       apiService('vendedores', {
         op: 'get',
         id,
@@ -360,13 +352,18 @@ const editVendedor = (() => {
         setFields(v);
         show($editVendedor);
       });
+    } else {
+      $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
+      $editVendedor.getElementsByTagName('h1')[0].textContent =
+        'Agregar vendedor';
+      setFields();
+      show($editVendedor);
     }
   };
 
   return {
     render,
     hide: () => hide($editVendedor),
-    path: /\/vendedor\/edit\/([^\/]+)$/,
   };
 })();
 
@@ -375,16 +372,46 @@ const notFound = (() => {
   return {
     render: () => show($notFound),
     hide: () => hide($notFound),
-    path: /\/.+/,
   };
 })();
 
-const modules = [
-  listVendedores,
-  showVendedor,
-  editVendedor,
-  /* notFound should always be last */
-  notFound,
+const welcome = (() => {
+  const $welcome = D.getElementById('welcome');
+  return {
+    render: () => show($welcome),
+    hide: () => hide($welcome),
+  };
+})();
+
+const urlMatch = (pattern, url) => {
+  const patts = pattern.split('/');
+  const us = url.split('/');
+  const params = {};
+
+  for (let i = 0; i < patts.length; i++) {
+    const p = patts[i];
+    if (p === us[i]) continue;
+    if (p.startsWith(':')) {
+      params[p.substring(1)] = us[i];
+      continue;
+    }
+    if (p === '*') {
+      params.$ = us.slice(i).join('/');
+      break;
+    }
+    return false;
+  }
+
+  return params;
+};
+
+const routes = [
+  { path: '/', module: welcome },
+  { path: '/vendedores', module: listVendedores },
+  { path: '/vendedor/edit/:id', module: editVendedor },
+  { path: '/vendedor/new', module: editVendedor },
+  { path: '/vendedor/:id', module: showVendedor },
+  { path: '*', module: notFound },
 ];
 
 let currentModule = null;
@@ -394,12 +421,12 @@ function matchPath(path, refresh) {
   error.hide();
   if (refresh || path !== currentPath) {
     currentPath = path;
-    modules.some((module) => {
-      const match = module.path.exec(path);
-      if (match) {
+    routes.some((r) => {
+      const params = urlMatch(r.path, path);
+      if (params) {
         currentModule?.hide();
-        module.render(match);
-        currentModule = module;
+        currentModule = r.module;
+        currentModule.render(params);
         return true;
       }
     });
