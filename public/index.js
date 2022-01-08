@@ -64,7 +64,7 @@ const handleAccordion = ($a, fn) => {
     if (!$panel) return;
     $panel.classList.add(IS_OPEN);
     $panel
-      .querySelector('i')
+      .getElementsByTagName('i')[0]
       .classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
     $panel.nextElementSibling.classList.add('show');
     if (typeof fn === 'function') {
@@ -76,7 +76,7 @@ const handleAccordion = ($a, fn) => {
     if (!$panel) return;
     $panel.classList.remove(IS_OPEN);
     $panel
-      .querySelector('i')
+      .getElementsByTagName('i')[0]
       .classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
     $panel.nextElementSibling.classList.remove('show');
   };
@@ -88,7 +88,7 @@ const handleAccordion = ($a, fn) => {
     if ($panel.classList.contains(IS_OPEN)) {
       closePanel($panel);
     } else {
-      closePanel($a.querySelector('.is-open'));
+      closePanel($a.getElementsByClassName('is-open')[0]);
       openPanel($panel);
     }
   };
@@ -127,7 +127,7 @@ const error = (() => {
   const $error = D.getElementById('error');
   return {
     show: (msg) => {
-      $error.querySelector('.msg').textContent = msg;
+      $error.getElementsByClassName('msg')[0].textContent = msg;
       show($error);
     },
     hide: () => hide($error),
@@ -143,13 +143,14 @@ const confirmar = (() => {
   };
   const ask = (msg, header, danger) =>
     new Promise((resolve) => {
-      $confirm.querySelector('.modal-body').textContent = msg;
-      $confirm.querySelector('.modal-title').textContent =
+      $confirm.getElementsByClassName('modal-body')[0].textContent = msg;
+      $confirm.getElementsByClassName('modal-title')[0].textContent =
         header ?? '¿Está seguro?';
-      const $headerClass = $confirm.querySelector('.modal-header').classList;
+      const $headerClass =
+        $confirm.getElementsByClassName('modal-header')[0].classList;
       $headerClass.toggle('bg-danger', danger);
       $headerClass.toggle('text-white', danger);
-      $yesClass = $confirm.querySelector('.yes').classList;
+      $yesClass = $confirm.getElementsByClassName('yes')[0].classList;
       $yesClass.toggle('btn-danger', danger);
       $yesClass.toggle('btn-primary', !danger);
 
@@ -222,8 +223,8 @@ const listVendedores = (() => {
 
   const fillRow = ($row, v) => {
     $row.dataset.id = v.id;
-    $row.querySelector('.nombre').textContent = v.nombre;
-    $row.querySelector('.email').textContent = v.email;
+    $row.getElementsByClassName('nombre')[0].textContent = v.nombre;
+    $row.getElementsByClassName('email')[0].textContent = v.email;
   };
   const render = () => {
     setTitle('Vendedores');
@@ -231,7 +232,7 @@ const listVendedores = (() => {
     apiService('vendedores', {
       op: 'list',
     }).then((vendedores) => {
-      const $$tr = $tbodyVendedores.querySelectorAll('tr');
+      const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
         if (index >= vendedores.length) {
           hide($row);
@@ -259,7 +260,7 @@ const showVendedor = (() => {
   const $showVendedor = D.getElementById('showVendedor');
 
   handleAccordion(
-    $showVendedor.querySelector('.accordion'),
+    $showVendedor.getElementsByClassName('accordion')[0],
     (panel, $panelBody) => {
       console.log(panel, $panelBody);
       switch (panel) {
@@ -276,8 +277,8 @@ const showVendedor = (() => {
       op: 'get',
       id,
     }).then((v) => {
-      $showVendedor.querySelector('.nombre').value = v.nombre;
-      $showVendedor.querySelector('.email').value = v.email;
+      $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
+      $showVendedor.getElementsByClassName('email')[0].value = v.email;
       show($showVendedor);
     });
   };
@@ -290,8 +291,8 @@ const showVendedor = (() => {
 
 const editVendedor = (() => {
   const $editVendedor = D.getElementById('editVendedor');
-  const $form = $editVendedor.querySelector('form');
-  const $submit = $editVendedor.querySelector('button');
+  const $form = $editVendedor.getElementsByTagName('form')[0];
+  const $submit = $editVendedor.getElementsByTagName('button')[0];
 
   const setFields = (v) => {
     Array.from($form.elements).forEach(($input) => {
@@ -303,36 +304,49 @@ const editVendedor = (() => {
     ev.preventDefault();
     ev.stopPropagation();
     if ($form.checkValidity()) {
+      $form.classList.add('was-validated');
       const data = Array.from($form.elements).reduce(
         (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
         {}
       );
 
+      const isNew = !data.id;
+
       apiService('vendedores', {
-        op: !!data.id ? 'update' : 'create',
+        op: isNew ? 'create' : 'update',
         id: data.id,
         data,
       }).then((data) => {
-        if (data) setFields(data);
+        if (data) {
+          if (isNew) {
+            router.replace(`/vendedor/edit/${data.id}`);
+          } else {
+            setFields(data);
+          }
+        }
       });
     }
-    $form.classList.add('was-validated');
   };
 
-  $form.querySelectorAll('input').forEach((input) => {
-    input.onkeydown = (ev) => {
+  for (let $input of $form.getElementsByTagName('input')) {
+    $input.onkeydown = (ev) => {
       $form.classList.remove('was-validated');
-      $submit.disabled = !Array.from($form.querySelectorAll('input')).some(
-        ($i) => $i.value !== $i.dataset.value
-      );
+      $submit.disabled = true;
+      for (let $i of $form.getElementsByTagName('input')) {
+        if ($i.value !== $i.dataset.value) {
+          $submit.disabled = false;
+          break;
+        }
+      }
     };
-  });
+  }
 
   const render = ([path, id]) => {
     $form.classList.remove('was-validated');
     if (id === '0') {
-      $form.querySelector('.btn').textContent = 'Agregar';
-      $editVendedor.querySelector('h1').textContent = 'Agregar vendedor';
+      $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
+      $editVendedor.getElementsByTagName('h1')[0].textContent =
+        'Agregar vendedor';
       setFields();
       show($editVendedor);
     } else {
@@ -340,8 +354,9 @@ const editVendedor = (() => {
         op: 'get',
         id,
       }).then((v) => {
-        $form.querySelector('.btn').textContent = 'Modificar';
-        $editVendedor.querySelector('h1').textContent = 'Modificar vendedor';
+        $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
+        $editVendedor.getElementsByTagName('h1')[0].textContent =
+          'Modificar vendedor';
         setFields(v);
         show($editVendedor);
       });
