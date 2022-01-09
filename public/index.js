@@ -19,11 +19,11 @@ const hide = ($) => {
 const router = {
   push: (path, refresh) => {
     H.pushState({ path }, '', path);
-    matchPath(path, refresh);
+    matchPath(refresh);
   },
   replace: (path, refresh) => {
     H.replaceState({ path }, '', path);
-    matchPath(path, refresh);
+    matchPath(refresh);
   },
 };
 
@@ -417,24 +417,29 @@ const routes = [
 let currentModule = null;
 let currentPath = '';
 
-function matchPath(path, refresh) {
+function matchPath(refresh) {
   error.hide();
-  if (refresh || path !== currentPath) {
-    currentPath = path;
+  const path = location.pathname;
+  const fullPath = path + location.search;
+  if (refresh || fullPath !== currentPath) {
+    currentPath = fullPath;
     routes.some((r) => {
       const params = urlMatch(r.path, path);
       if (params) {
         currentModule?.hide();
         currentModule = r.module;
-        currentModule.render(params);
+        currentModule.render({
+          ...params,
+          ...Object.fromEntries(new URLSearchParams(location.search)),
+        });
         return true;
       }
     });
   }
 }
 
-matchPath(location.pathname);
+matchPath();
 
 window.onpopstate = () => {
-  matchPath(location.pathname);
+  matchPath();
 };
