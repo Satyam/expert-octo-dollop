@@ -16,6 +16,24 @@ const hide = ($) => {
   $.classList.add(HIDDEN);
 };
 
+const currency = 'EUR';
+const locale = 'es-ES';
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const formatDate = (date) => (date ? dateFormatter.format(date) : '');
+
+const currFormatter = new Intl.NumberFormat(locale, {
+  style: 'currency',
+  currency,
+});
+
+const formatCurrency = (value) => (value ? currFormatter.format(value) : '');
+
 const router = {
   push: (path, refresh) => {
     H.pushState({ path }, '', path);
@@ -369,6 +387,97 @@ const editVendedorHandler = ($editVendedor) => {
   };
 };
 
+const listVentasHandler = ($listVentas) => {
+  const $tableVentas = D.getElementById('tableVentas');
+  const $tbodyVentas = $tableVentas.getElementsByTagName('tbody')[0];
+  const $tplVentas = D.getElementById('tplVentas');
+
+  $tableVentas.onclick = (ev) => {
+    ev.preventDefault();
+    const $t = ev.target;
+    const action = $t.closest('.action')?.dataset.action;
+    if (action) {
+      const id = $t.closest('tr').dataset.id;
+      switch (action) {
+        case 'add':
+          router.push('/vendedor/new');
+          break;
+        case 'show':
+          router.push(`/vendedor/${id}`);
+          break;
+        case 'edit':
+          router.push(`/vendedor/edit/${id}`);
+          break;
+        case 'delete':
+          confirmar
+            .ask('¿Quiere borrar este vendedor?', null, true)
+            .then((confirma) => {
+              return (
+                confirma &&
+                apiService('vendedores', {
+                  op: 'remove',
+                  id,
+                })
+              );
+            })
+            .then((result) => {
+              if (result !== false) {
+                router.replace(`/vendedores`, true);
+              }
+            });
+          break;
+      }
+    }
+  };
+
+  const fillRow = ($row, v) => {
+    $row.dataset.id = v.id;
+    $row.getElementsByClassName('fecha')[0].textContent = formatDate(
+      new Date(v.fecha)
+    );
+    $row.getElementsByClassName('concepto')[0].textContent = v.concepto;
+    $row.getElementsByClassName('vendedor')[0].textContent = v.vendedor;
+    $row.getElementsByClassName('idVendedor')[0].dataset.idVendedor =
+      v.idVendedor;
+    $row.getElementsByClassName('cantidad')[0].textContent = v.cantidad;
+    $row.getElementsByClassName('precioUnitario')[0].textContent =
+      formatCurrency(v.precioUnitario);
+    $row
+      .getElementsByClassName('iva')[0]
+      .classList.add(v.iva ? 'bi-check-square' : 'bi-square');
+    $row.getElementsByClassName('precioTotal')[0].textContent = formatCurrency(
+      v.cantidad * v.precioUnitario
+    );
+  };
+  const render = () => {
+    setTitle('Ventas');
+    show($listVentas);
+    apiService('ventas', {
+      op: 'list',
+    }).then((ventas) => {
+      const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
+      $$tr.forEach(($row, index) => {
+        if (index >= ventas.length) {
+          hide($row);
+        } else {
+          show($row);
+          fillRow($row, ventas[index]);
+        }
+      });
+
+      ventas.slice($$tr.length).forEach((v) => {
+        const $row = $tplVentas.content.cloneNode(true).firstElementChild;
+        fillRow($row, v);
+        $tbodyVentas.append($row);
+      });
+    });
+  };
+  return {
+    render,
+    hide: () => hide($listVentas),
+  };
+};
+
 // Routing
 const urlMatch = (pattern, url) => {
   const patts = pattern.split('/');
@@ -410,6 +519,10 @@ const routes = [
     path: '/vendedor/:id',
     module: showVendedorHandler(D.getElementById('showVendedor')),
   },
+  {
+    path: '/ventas',
+    module: listVentasHandler(D.getElementById('listVentas')),
+  },
   { path: '*', module: showAndHideHandler(D.getElementById('notFound')) },
 ];
 
@@ -437,13 +550,13 @@ function matchPath(refresh) {
   }
 }
 
-// Here we start initializing the application
-
-// First, associate the handlers to each piece of HTML
+// Here we start activating the application.
+// So far, nothing is visible
 
 // The navBar
 const navBar = navBarHandler(D.getElementById('navbarMenu'));
 
+// routing
 matchPath();
 
 window.onpopstate = () => {
