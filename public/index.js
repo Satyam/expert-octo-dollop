@@ -20,9 +20,7 @@ const currency = 'EUR';
 const locale = 'es-ES';
 
 const dateFormatter = new Intl.DateTimeFormat(locale, {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
+  dateStyle: 'medium',
 });
 
 const formatDate = (date) => (date ? dateFormatter.format(date) : '');
