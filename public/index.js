@@ -453,11 +453,13 @@ const listVentasHandler = ($listVentas) => {
       v.cantidad * v.precioUnitario
     );
   };
-  const render = () => {
+  const render = (options) => {
     setTitle('Ventas');
     show($listVentas);
+
     apiService('ventas', {
       op: 'list',
+      options,
     }).then((ventas) => {
       const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
@@ -474,6 +476,11 @@ const listVentasHandler = ($listVentas) => {
         fillRow($row, v);
         $tbodyVentas.append($row);
       });
+      Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
+        ($el) => {
+          $el.classList.toggle(HIDDEN, !!options.idVendedor);
+        }
+      );
     });
   };
   return {
