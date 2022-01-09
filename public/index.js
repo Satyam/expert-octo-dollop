@@ -37,7 +37,7 @@ const post = (service, op) =>
   });
 
 const apiService = (service, op) => {
-  loading.show();
+  loading.render();
   return post('verify')
     .then((resp) => {
       if (resp.ok) return post(service, op);
@@ -54,7 +54,7 @@ const apiService = (service, op) => {
     })
     .catch((err) => {
       loading.hide();
-      error.show(err);
+      error.render(err);
     });
 };
 
@@ -94,10 +94,11 @@ const handleAccordion = ($a, fn) => {
   };
 };
 
-// Application state
-const navBar = (() => {
+// Handlers of HTML components
+
+// First some generic componets always available
+const navBarHandler = ($navbarMenu) => {
   let $navItemActive = null;
-  const $navbarMenu = D.getElementById('navbarMenu');
 
   const onNavbarMenu = (ev) => {
     ev.preventDefault();
@@ -113,30 +114,31 @@ const navBar = (() => {
   };
 
   $navbarMenu.onclick = onNavbarMenu;
-})();
+};
 
-const loading = (() => {
-  const $loading = D.getElementById('loading');
+// Generic for components that just need showing and hiding
+const showAndHideHandler = ($el) => {
   return {
-    show: () => show($loading),
-    hide: () => hide($loading),
+    render: () => show($el),
+    hide: () => hide($el),
   };
-})();
+};
 
-const error = (() => {
-  const $error = D.getElementById('error');
+const loading = showAndHideHandler(D.getElementById('loading'));
+
+const errorHandler = ($error) => {
   return {
-    show: (msg) => {
+    render: (msg) => {
       $error.getElementsByClassName('msg')[0].textContent = msg;
       show($error);
     },
     hide: () => hide($error),
   };
-})();
+};
 
-const confirmar = (() => {
-  const $confirm = D.getElementById('confirm');
+const error = errorHandler(D.getElementById('error'));
 
+const confirmarHandler = ($confirm) => {
   const hide = () => {
     $confirm.classList.remove('show');
     $confirm.style.display = 'none';
@@ -175,10 +177,11 @@ const confirmar = (() => {
     ask,
     hide,
   };
-})();
+};
+const confirmar = confirmarHandler(D.getElementById('confirm'));
 
-const listVendedores = (() => {
-  const $listVendedores = D.getElementById('listVendedores');
+// Now app-related handlers
+const listVendedoresHandler = ($listVendedores) => {
   const $tableVendedores = D.getElementById('tableVendedores');
   const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
   const $tplVendedores = D.getElementById('tplVendedores');
@@ -253,11 +256,9 @@ const listVendedores = (() => {
     render,
     hide: () => hide($listVendedores),
   };
-})();
+};
 
-const showVendedor = (() => {
-  const $showVendedor = D.getElementById('showVendedor');
-
+const showVendedorHandler = ($showVendedor) => {
   handleAccordion(
     $showVendedor.getElementsByClassName('accordion')[0],
     (panel, $panelBody) => {
@@ -276,19 +277,20 @@ const showVendedor = (() => {
       op: 'get',
       id,
     }).then((v) => {
-      $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
-      $showVendedor.getElementsByClassName('email')[0].value = v.email;
-      show($showVendedor);
+      if (v) {
+        $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
+        $showVendedor.getElementsByClassName('email')[0].value = v.email;
+        show($showVendedor);
+      }
     });
   };
   return {
     render,
     hide: () => hide($showVendedor),
   };
-})();
+};
 
-const editVendedor = (() => {
-  const $editVendedor = D.getElementById('editVendedor');
+const editVendedorHandler = ($editVendedor) => {
   const $form = $editVendedor.getElementsByTagName('form')[0];
   const $submit = $editVendedor.getElementsByTagName('button')[0];
 
@@ -365,24 +367,9 @@ const editVendedor = (() => {
     render,
     hide: () => hide($editVendedor),
   };
-})();
+};
 
-const notFound = (() => {
-  const $notFound = D.getElementById('notFound');
-  return {
-    render: () => show($notFound),
-    hide: () => hide($notFound),
-  };
-})();
-
-const welcome = (() => {
-  const $welcome = D.getElementById('welcome');
-  return {
-    render: () => show($welcome),
-    hide: () => hide($welcome),
-  };
-})();
-
+// Routing
 const urlMatch = (pattern, url) => {
   const patts = pattern.split('/');
   const us = url.split('/');
@@ -406,12 +393,24 @@ const urlMatch = (pattern, url) => {
 };
 
 const routes = [
-  { path: '/', module: welcome },
-  { path: '/vendedores', module: listVendedores },
-  { path: '/vendedor/edit/:id', module: editVendedor },
-  { path: '/vendedor/new', module: editVendedor },
-  { path: '/vendedor/:id', module: showVendedor },
-  { path: '*', module: notFound },
+  { path: '/', module: showAndHideHandler(D.getElementById('welcome')) },
+  {
+    path: '/vendedores',
+    module: listVendedoresHandler(D.getElementById('listVendedores')),
+  },
+  {
+    path: '/vendedor/edit/:id',
+    module: editVendedorHandler(D.getElementById('editVendedor')),
+  },
+  {
+    path: '/vendedor/new',
+    module: editVendedorHandler(D.getElementById('editVendedor')),
+  },
+  {
+    path: '/vendedor/:id',
+    module: showVendedorHandler(D.getElementById('showVendedor')),
+  },
+  { path: '*', module: showAndHideHandler(D.getElementById('notFound')) },
 ];
 
 let currentModule = null;
@@ -437,6 +436,13 @@ function matchPath(refresh) {
     });
   }
 }
+
+// Here we start initializing the application
+
+// First, associate the handlers to each piece of HTML
+
+// The navBar
+const navBar = navBarHandler(D.getElementById('navbarMenu'));
 
 matchPath();
 
