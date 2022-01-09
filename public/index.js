@@ -1,7 +1,5 @@
 // Constants
 const D = document;
-const W = window;
-const H = W.history;
 
 const HIDDEN = 'hidden';
 // Helpers
@@ -34,11 +32,11 @@ const formatCurrency = (value) => (value ? currFormatter.format(value) : '');
 
 const router = {
   push: (path, refresh) => {
-    H.pushState({ path }, '', path);
+    history.pushState({ path }, '', path);
     matchPath(refresh);
   },
   replace: (path, refresh) => {
-    H.replaceState({ path }, '', path);
+    history.replaceState({ path }, '', path);
     matchPath(refresh);
   },
 };
@@ -120,7 +118,7 @@ const navBarHandler = ($navbarMenu) => {
     ev.preventDefault();
     const navItem = ev.target.closest('.nav-item');
     const { path } = navItem.dataset;
-    if (path === W.location.pathname) return;
+    if (path === location.pathname) return;
 
     $navItemActive?.classList.remove('active');
     $navItemActive = navItem;
