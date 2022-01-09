@@ -400,21 +400,21 @@ const listVentasHandler = ($listVentas) => {
       const id = $t.closest('tr').dataset.id;
       switch (action) {
         case 'add':
-          router.push('/vendedor/new');
+          router.push('/venta/new');
           break;
         case 'show':
-          router.push(`/vendedor/${id}`);
+          router.push(`/venta/${id}`);
           break;
         case 'edit':
-          router.push(`/vendedor/edit/${id}`);
+          router.push(`/venta/edit/${id}`);
           break;
         case 'delete':
           confirmar
-            .ask('¿Quiere borrar este vendedor?', null, true)
+            .ask('¿Quiere borrar esta venta?', null, true)
             .then((confirma) => {
               return (
                 confirma &&
-                apiService('vendedores', {
+                apiService('ventas', {
                   op: 'remove',
                   id,
                 })
@@ -422,9 +422,13 @@ const listVentasHandler = ($listVentas) => {
             })
             .then((result) => {
               if (result !== false) {
-                router.replace(`/vendedores`, true);
+                router.replace(`/ventas`, true);
               }
             });
+          break;
+        case 'showVendedor':
+          const idVendedor = $t.closest('.action')?.dataset.idVendedor;
+          router.push(`/vendedor/${idVendedor}`);
           break;
       }
     }
@@ -484,7 +488,9 @@ const urlMatch = (pattern, url) => {
   const us = url.split('/');
   const params = {};
 
-  for (let i = 0; i < patts.length; i++) {
+  let i;
+  for (i = 0; i < patts.length; i++) {
+    if (i >= us.length) return false;
     const p = patts[i];
     if (p === us[i]) continue;
     if (p.startsWith(':')) {
@@ -493,11 +499,12 @@ const urlMatch = (pattern, url) => {
     }
     if (p === '*') {
       params.$ = us.slice(i).join('/');
+      i = us.length;
       break;
     }
     return false;
   }
-
+  if (us.length > i) return false;
   return params;
 };
 
