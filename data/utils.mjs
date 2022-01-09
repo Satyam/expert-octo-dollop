@@ -4,6 +4,13 @@ import sqlite3 from 'sqlite3';
 
 import { join } from 'path';
 
+export const TABLE_VENTAS = 'Ventas';
+export const TABLE_VENDEDORES = 'Vendedores';
+export const TABLE_DISTRIBUIDORES = 'Distribuidores';
+export const TABLE_SALIDAS = 'Salidas';
+export const TABLE_USERS = 'Users';
+export const TABLE_CONSIGNA = 'Consigna';
+
 const NOT_FOUND = 404;
 
 let _db;

@@ -1,4 +1,5 @@
 import {
+  TABLE_VENDEDORES,
   listAll,
   getById,
   createWithCuid,
@@ -6,15 +7,13 @@ import {
   deleteById,
 } from './utils.mjs';
 
-const TABLE = 'Vendedores';
-
 export default function ({ op, ...rest }) {
   const fns = {
-    list: () => listAll(TABLE),
-    remove: ({ id }) => deleteById(TABLE, id),
-    get: ({ id }) => getById(TABLE, id),
-    create: ({ data }) => createWithCuid(TABLE, data),
-    update: ({ id, data }) => updateById(TABLE, id, data),
+    list: () => listAll(TABLE_VENDEDORES),
+    remove: ({ id }) => deleteById(TABLE_VENDEDORES, id),
+    get: ({ id }) => getById(TABLE_VENDEDORES, id),
+    create: ({ data }) => createWithCuid(TABLE_VENDEDORES, data),
+    update: ({ id, data }) => updateById(TABLE_VENDEDORES, id, data),
   };
   const fn = fns[op];
   if (fn) return fn(rest);

@@ -1,4 +1,5 @@
 import {
+  TABLE_USERS,
   listAll,
   getById,
   createWithCuid,
@@ -17,23 +18,22 @@ export function hash(data) {
   return hmac.digest('hex');
 }
 
-const TABLE = 'Users';
-
 const safeFields = ['id', 'nombre', 'email'];
 
 export default function ({ op, ...rest }) {
   const fns = {
-    list: () => listAll(TABLE, safeFields),
-    remove: ({ id }) => deleteById(TABLE, id),
-    get: ({ id }) => getById(TABLE, id, safeFields),
-    create: ({ data }) => createWithCuid(TABLE, hashPassword(data), safeFields),
+    list: () => listAll(TABLE_USERS, safeFields),
+    remove: ({ id }) => deleteById(TABLE_USERS, id),
+    get: ({ id }) => getById(TABLE_USERS, id, safeFields),
+    create: ({ data }) =>
+      createWithCuid(TABLE_USERS, hashPassword(data), safeFields),
     update: ({ id, data }) =>
-      updateById(TABLE, id, hashPassword(data), safeFields),
+      updateById(TABLE_USERS, id, hashPassword(data), safeFields),
     checkValidUser: ({ data }) =>
       getDb().then((db) =>
         db.get(
           `select ${safeFields.join(',')}
-           from ${TABLE} where lower(email) = lower(?) and password = ?`,
+           from ${TABLE_USERS} where lower(email) = lower(?) and password = ?`,
           [data.email, hash(data.password.toLowerCase())]
         )
       ),

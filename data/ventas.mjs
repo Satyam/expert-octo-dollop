@@ -1,12 +1,12 @@
 import {
+  TABLE_VENTAS,
+  TABLE_VENDEDORES,
   getDb,
   getById,
   createWithCuid,
   updateById,
   deleteById,
 } from './utils.mjs';
-
-const TABLE = 'Ventas';
 
 export default function ({ op, ...rest }) {
   const fns = {
@@ -15,15 +15,15 @@ export default function ({ op, ...rest }) {
         .then((db) =>
           options?.idVendedor
             ? db.all(
-                `select * from ${TABLE} where idVendedor = $idVendedor order by fecha, id`,
+                `select * from ${TABLE_VENTAS} where idVendedor = $idVendedor order by fecha, id`,
                 {
                   $idVendedor: options.idVendedor,
                 }
               )
             : db.all(
-                `select Ventas.*, Vendedores.nombre as vendedor from Ventas
-            inner join Vendedores on Ventas.idVendedor = Vendedores.id  
-            order by fecha, id`
+                `select ${TABLE_VENTAS}.*, ${TABLE_VENDEDORES}.nombre as vendedor from ${TABLE_VENTAS}
+                inner join ${TABLE_VENDEDORES} on ${TABLE_VENTAS}.idVendedor = ${TABLE_VENDEDORES}.id  
+                order by fecha, id`
               )
         )
         .then((data) => ({ data }))
@@ -31,10 +31,10 @@ export default function ({ op, ...rest }) {
           error: err.code,
           data: err.message,
         })),
-    remove: ({ id }) => deleteById(TABLE, id),
-    get: ({ id }) => getById(TABLE, id),
-    create: ({ data }) => createWithCuid(TABLE, data),
-    update: ({ id, data }) => updateById(TABLE, id, data),
+    remove: ({ id }) => deleteById(TABLE_VENTAS, id),
+    get: ({ id }) => getById(TABLE_VENTAS, id),
+    create: ({ data }) => createWithCuid(TABLE_VENTAS, data),
+    update: ({ id, data }) => updateById(TABLE_VENTAS, id, data),
   };
   const fn = fns[op];
   if (fn) return fn(rest);
