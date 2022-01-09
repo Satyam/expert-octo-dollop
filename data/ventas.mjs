@@ -11,20 +11,26 @@ const TABLE = 'Ventas';
 export default function ({ op, ...rest }) {
   const fns = {
     list: ({ options }) =>
-      getDb().then((db) =>
-        options.idVendedor
-          ? db.all(
-              `select * from ${TABLE} where idVendedor = $idVendedor order by fecha, id`,
-              {
-                $idVendedor: options.idVendedor,
-              }
-            )
-          : db.all(
-              `select Ventas.*, Users.nombre as vendedor from Ventas 
-          inner join Users on Ventas.idVendedor = Users.id  
-          order by fecha, id`
-            )
-      ),
+      getDb()
+        .then((db) =>
+          options?.idVendedor
+            ? db.all(
+                `select * from ${TABLE} where idVendedor = $idVendedor order by fecha, id`,
+                {
+                  $idVendedor: options.idVendedor,
+                }
+              )
+            : db.all(
+                `select Ventas.*, Vendedores.nombre as vendedor from Ventas
+            inner join Vendedores on Ventas.idVendedor = Vendedores.id  
+            order by fecha, id`
+              )
+        )
+        .then((data) => ({ data }))
+        .catch((err) => ({
+          error: err.code,
+          data: err.message,
+        })),
     remove: ({ id }) => deleteById(TABLE, id),
     get: ({ id }) => getById(TABLE, id),
     create: ({ data }) => createWithCuid(TABLE, data),
