@@ -72,8 +72,9 @@ const apiService = (service, op) => {
     });
 };
 
-const handleAccordion = ($a, fn) => {
+const handleAccordion = ($a) => {
   const IS_OPEN = 'is-open';
+
   const openPanel = ($panel) => {
     if (!$panel) return;
     $panel.classList.add(IS_OPEN);
@@ -81,9 +82,11 @@ const handleAccordion = ($a, fn) => {
       .getElementsByTagName('i')[0]
       .classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
     $panel.nextElementSibling.classList.add('show');
-    if (typeof fn === 'function') {
-      fn($panel.dataset.panel, $panel.nextElementSibling);
-    }
+    const openEvent = new CustomEvent('open', {
+      bubbles: true,
+      detail: $panel.dataset.panel,
+    });
+    $panel.nextElementSibling.firstElementChild.dispatchEvent(openEvent);
   };
 
   const closePanel = ($panel) => {
@@ -93,6 +96,11 @@ const handleAccordion = ($a, fn) => {
       .getElementsByTagName('i')[0]
       .classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
     $panel.nextElementSibling.classList.remove('show');
+    const closeEvent = new CustomEvent('close', {
+      bubbles: true,
+      detail: $panel.dataset.panel,
+    });
+    $panel.nextElementSibling.firstElementChild.dispatchEvent(closeEvent);
   };
 
   $a.onclick = (ev) => {
@@ -273,20 +281,23 @@ const listVendedoresHandler = ($listVendedores) => {
 };
 
 const showVendedorHandler = ($showVendedor) => {
-  handleAccordion(
-    $showVendedor.getElementsByClassName('accordion')[0],
-    (panel, $panelBody) => {
-      console.log(panel, $panelBody);
-      switch (panel) {
+  $panelVentas = D.getElementById('listVentas').cloneNode(true);
+  $accordion = $showVendedor.getElementsByClassName('accordion')[0];
+  handleAccordion($accordion);
+
+  const render = ({ id }) => {
+    $accordion.addEventListener('open', (ev) => {
+      const { detail: panelName, target: $panelBody } = ev;
+      switch (panelName) {
         case 'ventas':
+          if ($panelBody.children.length === 0) $panelBody.append($panelVentas);
+          listVentasHandler($panelVentas).render({ idVendedor: id });
           break;
         case 'consigna':
           break;
       }
-    }
-  );
-
-  const render = ({ id }) => {
+    });
+    $accordion.addEventListener('close', console.log);
     apiService('vendedores', {
       op: 'get',
       id,
