@@ -367,15 +367,11 @@ const editVendedorHandler = ($editVendedor) => {
         id,
       }).then((v) => {
         $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
-        $editVendedor.getElementsByTagName('h1')[0].textContent =
-          'Modificar vendedor';
         setFields(v);
         show($editVendedor);
       });
     } else {
       $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
-      $editVendedor.getElementsByTagName('h1')[0].textContent =
-        'Agregar vendedor';
       setFields();
       show($editVendedor);
     }
@@ -494,28 +490,41 @@ const listVentasHandler = ($listVentas) => {
 // Routing table
 
 const routes = [
-  { path: '/', module: showAndHideHandler(D.getElementById('welcome')) },
+  {
+    path: '/',
+    module: showAndHideHandler(D.getElementById('welcome')),
+    heading: 'Welcome',
+  },
   {
     path: '/vendedores',
     module: listVendedoresHandler(D.getElementById('listVendedores')),
+    heading: 'Vendedores',
   },
   {
     path: '/vendedor/edit/:id',
     module: editVendedorHandler(D.getElementById('editVendedor')),
+    heading: 'Modificar vendedor',
   },
   {
     path: '/vendedor/new',
     module: editVendedorHandler(D.getElementById('editVendedor')),
+    heading: 'Agregar vendedor',
   },
   {
     path: '/vendedor/:id',
     module: showVendedorHandler(D.getElementById('showVendedor')),
+    heading: 'Vendedor',
   },
   {
     path: '/ventas',
     module: listVentasHandler(D.getElementById('listVentas')),
+    heading: 'Ventas',
   },
-  { path: '*', module: showAndHideHandler(D.getElementById('notFound')) },
+  {
+    path: '*',
+    module: showAndHideHandler(D.getElementById('notFound')),
+    heading: 'No existe',
+  },
 ];
 
 // create regular expressions for each route
@@ -549,6 +558,7 @@ function matchPath(refresh) {
           ...(path.match(r.$_rx)?.groups || {}),
           ...Object.fromEntries(new URLSearchParams(location.search)),
         });
+        D.getElementsByTagName('h1')[0].textContent = r.heading;
         return true;
       }
     });
