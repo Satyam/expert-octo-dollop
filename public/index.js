@@ -483,30 +483,8 @@ const listVentasHandler = ($listVentas) => {
 };
 
 // Routing
-const urlMatch = (pattern, url) => {
-  const patts = pattern.split('/');
-  const us = url.split('/');
-  const params = {};
 
-  let i;
-  for (i = 0; i < patts.length; i++) {
-    if (i >= us.length) return false;
-    const p = patts[i];
-    if (p === us[i]) continue;
-    if (p.startsWith(':')) {
-      params[p.substring(1)] = us[i];
-      continue;
-    }
-    if (p === '*') {
-      params.$ = us.slice(i).join('/');
-      i = us.length;
-      break;
-    }
-    return false;
-  }
-  if (us.length > i) return false;
-  return params;
-};
+// Routing table
 
 const routes = [
   { path: '/', module: showAndHideHandler(D.getElementById('welcome')) },
@@ -533,22 +511,35 @@ const routes = [
   { path: '*', module: showAndHideHandler(D.getElementById('notFound')) },
 ];
 
+// create regular expressions for each route
+routes.forEach((r) => {
+  r.$_rx = new RegExp(
+    `^${r.path
+      .split('/')
+      .map((p) => {
+        if (p.startsWith(':')) return `(?<${p.substring(1)}>[^\\/]*)`;
+        if (p === '*') return `(?<$>[^\?$]*)`;
+        return p;
+      })
+      .join('\\/')}$`
+  );
+});
+
 let currentModule = null;
 let currentPath = '';
 
 function matchPath(refresh) {
-  error.hide();
+  error.hide(); // Just in case there is any open
   const path = location.pathname;
   const fullPath = path + location.search;
   if (refresh || fullPath !== currentPath) {
     currentPath = fullPath;
     routes.some((r) => {
-      const params = urlMatch(r.path, path);
-      if (params) {
+      if (r.$_rx.test(path)) {
         currentModule?.hide();
         currentModule = r.module;
         currentModule.render({
-          ...params,
+          ...(path.match(r.$_rx)?.groups || {}),
           ...Object.fromEntries(new URLSearchParams(location.search)),
         });
         return true;
