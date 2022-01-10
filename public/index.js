@@ -73,40 +73,71 @@ const apiService = (service, op) => {
 };
 
 const handleAccordion = ($a) => {
-  const IS_OPEN = 'is-open';
+  const panels = Array.from($a.getElementsByClassName('card-header')).reduce(
+    (ps, $ch) => ({
+      ...ps,
+      [$ch.dataset.panel]: $ch,
+    }),
+    {}
+  );
 
-  const openPanel = ($panel) => {
+  let currentOpen;
+
+  const closePanel = (panelName) => {
+    const $panel = panels[panelName];
     if (!$panel) return;
-    $panel.classList.add(IS_OPEN);
+    if (panelName === currentOpen) {
+      currentOpen = null;
+      $panel.classList.remove('is-open');
+      $panel.nextElementSibling.classList.remove('show');
+      $panel.nextElementSibling.firstElementChild.dispatchEvent(
+        new CustomEvent('closePanel', {
+          bubbles: true,
+          detail: panelName,
+        })
+      );
+    }
+  };
+
+  const openPanel = (panelName) => {
+    const $panel = panels[panelName];
+    if (!$panel) return;
+    if (currentOpen) closePanel(currentOpen);
+    currentOpen = panelName;
+    $panel.classList.add('is-open');
     $panel.nextElementSibling.classList.add('show');
-    const openEvent = new CustomEvent('open', {
-      bubbles: true,
-      detail: $panel.dataset.panel,
-    });
-    $panel.nextElementSibling.firstElementChild.dispatchEvent(openEvent);
+    $panel.nextElementSibling.firstElementChild.dispatchEvent(
+      new CustomEvent('openPanel', {
+        bubbles: true,
+        detail: panelName,
+      })
+    );
   };
 
-  const closePanel = ($panel) => {
-    if (!$panel) return;
-    $panel.classList.remove(IS_OPEN);
-    $panel.nextElementSibling.classList.remove('show');
-    const closeEvent = new CustomEvent('close', {
-      bubbles: true,
-      detail: $panel.dataset.panel,
-    });
-    $panel.nextElementSibling.firstElementChild.dispatchEvent(closeEvent);
+  const togglePanel = (panelName) => {
+    if (panelName === currentOpen) {
+      closePanel(panelName);
+    } else {
+      openPanel(panelName);
+    }
   };
+
+  const closeAllPanels = () => closePanel(currentOpen);
 
   $a.onclick = (ev) => {
     ev.preventDefault();
     const $panel = ev.target.closest('.card-header');
     if (!$panel) return;
-    if ($panel.classList.contains(IS_OPEN)) {
-      closePanel($panel);
-    } else {
-      closePanel($a.getElementsByClassName('is-open')[0]);
-      openPanel($panel);
-    }
+    const panelName = $panel.dataset.panel;
+    togglePanel(panelName);
+  };
+
+  return {
+    openPanel,
+    closePanel,
+    togglePanel,
+    closeAllPanels,
+    getOpenPanel: () => currentOpen,
   };
 };
 
@@ -277,10 +308,10 @@ const listVendedoresHandler = ($listVendedores) => {
 const showVendedorHandler = ($showVendedor) => {
   $panelVentas = D.getElementById('listVentas').cloneNode(true);
   $accordion = $showVendedor.getElementsByClassName('accordion')[0];
-  handleAccordion($accordion);
+  const { closeAllPanels } = handleAccordion($accordion);
 
   const render = ({ id }) => {
-    $accordion.addEventListener('open', (ev) => {
+    $accordion.addEventListener('openPanel', (ev) => {
       const { detail: panelName, target: $panelBody } = ev;
       switch (panelName) {
         case 'ventas':
@@ -303,9 +334,13 @@ const showVendedorHandler = ($showVendedor) => {
       }
     });
   };
+
   return {
     render,
-    hide: () => hide($showVendedor),
+    hide: () => {
+      closeAllPanels();
+      hide($showVendedor);
+    },
   };
 };
 
