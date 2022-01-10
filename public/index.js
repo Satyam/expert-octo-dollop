@@ -1,17 +1,16 @@
 // Constants
 const D = document;
 
-const HIDDEN = 'hidden';
 // Helpers
 
 const setTitle = (title) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
 const _show = ($) => {
-  $.classList.remove(HIDDEN);
+  $.style.display = 'block';
 };
 const _hide = ($) => {
-  $.classList.add(HIDDEN);
+  $.style.display = 'none';
 };
 
 const currency = 'EUR';
@@ -510,7 +509,8 @@ const listVentasHandler = ($listVentas) => {
       });
       Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
         ($el) => {
-          $el.classList.toggle(HIDDEN, !!options.idVendedor);
+          if (!!options.idVendedor) _show($el);
+          else _hide($el);
         }
       );
     });
