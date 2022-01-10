@@ -78,9 +78,6 @@ const handleAccordion = ($a) => {
   const openPanel = ($panel) => {
     if (!$panel) return;
     $panel.classList.add(IS_OPEN);
-    $panel
-      .getElementsByTagName('i')[0]
-      .classList.replace('bi-caret-down-fill', 'bi-caret-up-fill');
     $panel.nextElementSibling.classList.add('show');
     const openEvent = new CustomEvent('open', {
       bubbles: true,
@@ -92,9 +89,6 @@ const handleAccordion = ($a) => {
   const closePanel = ($panel) => {
     if (!$panel) return;
     $panel.classList.remove(IS_OPEN);
-    $panel
-      .getElementsByTagName('i')[0]
-      .classList.replace('bi-caret-up-fill', 'bi-caret-down-fill');
     $panel.nextElementSibling.classList.remove('show');
     const closeEvent = new CustomEvent('close', {
       bubbles: true,

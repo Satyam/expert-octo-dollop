@@ -16,3 +16,13 @@
 .hidden {
   display: none;
 }
+
+.card-header.is-open .bi::before {
+  /* bi-caret-up-fill */
+  content: '\f235';
+}
+
+.card-header .bi::before {
+  /* bi-caret-down-fill */
+  content: '\f229';
+}
