@@ -20,18 +20,10 @@
         <a class="navbar-brand" href="/"
           ><img src="/La Corazon.png" alt="La Corazón" /> La Corazón</a
         >
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarTogglerDemo02"
-          aria-controls="navbarTogglerDemo02"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+        <button class="navbar-toggler" type="button">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+        <div class="collapse navbar-collapse">
           <ul id="navbarMenu" class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li data-path="/usuarios" class="nav-item active">
               <a class="nav-link" href="#">Usuarios</a>
@@ -50,23 +42,17 @@
       </nav>
       <h1></h1>
       <div id="notFound" class="hidden">
-        <div class="alert alert-warning" role="alert">Path not found</div>
+        <div class="alert alert-warning">Path not found</div>
       </div>
-      <div id="loading" class="alert alert-secondary hidden" role="alert">
+      <div id="loading" class="alert alert-secondary hidden">
         <i class="bi bi-hourglass-split"></i> Loading ...
       </div>
-      <div id="error" class="alert alert-danger hidden" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> <span class="msg" />
+      <div id="error" class="alert alert-danger hidden">
+        <i class="bi bi-exclamation-triangle"></i> <span class="msg"></span>
       </div>
 
-      <div
-        class="modal fade"
-        id="confirm"
-        tabindex="-1"
-        role="dialog"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog" role="document">
+      <div id="confirm" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Está seguro</h5>
@@ -74,7 +60,6 @@
                 type="button"
                 class="btn-close action"
                 data-action="no"
-                aria-label="Close"
               ></button>
             </div>
             <div class="modal-body">...</div>
@@ -99,9 +84,7 @@
       </div>
 
       <div id="welcome" class="hidden">
-        <div class="alert alert-success" role="alert">
-          Bienvenido a La Corazón
-        </div>
+        <div class="alert alert-success">Bienvenido a La Corazón</div>
       </div>
 
       <div id="listVendedores" class="hidden">
