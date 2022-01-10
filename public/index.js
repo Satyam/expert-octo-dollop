@@ -524,8 +524,7 @@ const listVentasHandler = ($listVentas) => {
       });
       Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
         ($el) => {
-          if (!!options.idVendedor) _show($el);
-          else _hide($el);
+          $el.classList.toggle('hidden', !!options.idVendedor);
         }
       );
     });
