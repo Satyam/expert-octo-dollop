@@ -299,9 +299,9 @@ const listVendedoresHandler = ($listVendedores) => {
       const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
         if (index >= vendedores.length) {
-          _hide($row);
+          $row.classList.add('hidden');
         } else {
-          _show($row);
+          $row.classList.remove('hidden');
           fillRow($row, vendedores[index]);
         }
       });
@@ -510,9 +510,9 @@ const listVentasHandler = ($listVentas) => {
       const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
         if (index >= ventas.length) {
-          _hide($row);
+          $row.classList.add('hidden');
         } else {
-          _show($row);
+          $row.classList.remove('hidden');
           fillRow($row, ventas[index]);
         }
       });
