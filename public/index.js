@@ -142,11 +142,17 @@ const handleAccordion = ($a) => {
 
 // Handlers of HTML components
 
-// First some generic componets always available
-const navBarHandler = ($navbarMenu) => {
+// First some generic componets available for all routes
+
+const navBarHandler = ($navbar) => {
+  const $menu = $navbar.getElementsByClassName('navbar-nav')[0];
+  const $toggleBtn = $navbar.getElementsByClassName('navbar-toggler')[0];
+  const $collapse = $navbar.getElementsByClassName('navbar-collapse')[0];
+  const $brand = $navbar.getElementsByClassName('navbar-brand')[0];
+
   let $navItemActive = null;
 
-  const onNavbarMenu = (ev) => {
+  $menu.onclick = (ev) => {
     ev.preventDefault();
     const navItem = ev.target.closest('.nav-item');
     const { path } = navItem.dataset;
@@ -156,10 +162,19 @@ const navBarHandler = ($navbarMenu) => {
     $navItemActive = navItem;
     $navItemActive.classList.add('active');
 
+    $collapse.classList.remove('show');
     router.push(path);
   };
 
-  $navbarMenu.onclick = onNavbarMenu;
+  $toggleBtn.onclick = (ev) => {
+    ev.preventDefault();
+    $collapse.classList.toggle('show');
+  };
+
+  $brand.onclick = (ev) => {
+    ev.preventDefault();
+    router.push('/');
+  };
 };
 
 // Generic for components that just need showing and hiding
@@ -605,7 +620,7 @@ function matchPath(refresh) {
 // So far, nothing is visible
 
 // The navBar
-const navBar = navBarHandler(D.getElementById('navbarMenu'));
+const navBar = navBarHandler(D.getElementById('navbar'));
 
 // routing
 matchPath();
