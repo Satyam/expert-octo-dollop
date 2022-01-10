@@ -7,10 +7,10 @@ const HIDDEN = 'hidden';
 const setTitle = (title) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
-const show = ($) => {
+const _show = ($) => {
   $.classList.remove(HIDDEN);
 };
-const hide = ($) => {
+const _hide = ($) => {
   $.classList.add(HIDDEN);
 };
 
@@ -166,8 +166,8 @@ const navBarHandler = ($navbarMenu) => {
 // Generic for components that just need showing and hiding
 const showAndHideHandler = ($el) => {
   return {
-    render: () => show($el),
-    hide: () => hide($el),
+    render: () => _show($el),
+    hide: () => _hide($el),
   };
 };
 
@@ -177,9 +177,9 @@ const errorHandler = ($error) => {
   return {
     render: (msg) => {
       $error.getElementsByClassName('msg')[0].textContent = msg;
-      show($error);
+      _show($error);
     },
-    hide: () => hide($error),
+    hide: () => _hide($error),
   };
 };
 
@@ -278,16 +278,16 @@ const listVendedoresHandler = ($listVendedores) => {
   };
   const render = () => {
     setTitle('Vendedores');
-    show($listVendedores);
+    _show($listVendedores);
     apiService('vendedores', {
       op: 'list',
     }).then((vendedores) => {
       const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
         if (index >= vendedores.length) {
-          hide($row);
+          _hide($row);
         } else {
-          show($row);
+          _show($row);
           fillRow($row, vendedores[index]);
         }
       });
@@ -301,7 +301,7 @@ const listVendedoresHandler = ($listVendedores) => {
   };
   return {
     render,
-    hide: () => hide($listVendedores),
+    hide: () => _hide($listVendedores),
   };
 };
 
@@ -330,7 +330,7 @@ const showVendedorHandler = ($showVendedor) => {
       if (v) {
         $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
         $showVendedor.getElementsByClassName('email')[0].value = v.email;
-        show($showVendedor);
+        _show($showVendedor);
       }
     });
   };
@@ -339,7 +339,7 @@ const showVendedorHandler = ($showVendedor) => {
     render,
     hide: () => {
       closeAllPanels();
-      hide($showVendedor);
+      _hide($showVendedor);
     },
   };
 };
@@ -404,18 +404,18 @@ const editVendedorHandler = ($editVendedor) => {
       }).then((v) => {
         $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
         setFields(v);
-        show($editVendedor);
+        _show($editVendedor);
       });
     } else {
       $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
       setFields();
-      show($editVendedor);
+      _show($editVendedor);
     }
   };
 
   return {
     render,
-    hide: () => hide($editVendedor),
+    hide: () => _hide($editVendedor),
   };
 };
 
@@ -487,7 +487,7 @@ const listVentasHandler = ($listVentas) => {
   };
   const render = (options) => {
     setTitle('Ventas');
-    show($listVentas);
+    _show($listVentas);
 
     apiService('ventas', {
       op: 'list',
@@ -496,9 +496,9 @@ const listVentasHandler = ($listVentas) => {
       const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
       $$tr.forEach(($row, index) => {
         if (index >= ventas.length) {
-          hide($row);
+          _hide($row);
         } else {
-          show($row);
+          _show($row);
           fillRow($row, ventas[index]);
         }
       });
@@ -517,7 +517,7 @@ const listVentasHandler = ($listVentas) => {
   };
   return {
     render,
-    hide: () => hide($listVentas),
+    hide: () => _hide($listVentas),
   };
 };
 
