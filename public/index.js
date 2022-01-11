@@ -40,22 +40,20 @@ const router = {
   },
 };
 
-const post = (service, op) =>
-  fetch(`${window.origin}/api/${service}`, {
+const logout = () => {
+  // To ensure everything is erased, really navigate:
+  location.replace('/');
+};
+
+const apiService = (service, op) => {
+  loading.render();
+  return fetch(`${window.origin}/api/${service}`, {
     method: 'POST',
     headers: {
       'Content-type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify(op),
-  });
-
-const apiService = (service, op) => {
-  loading.render();
-  return post('verify')
-    .then((resp) => {
-      if (resp.ok) return post(service, op);
-      return Promise.reject('unauthorized');
-    })
+  })
     .then((resp) => {
       if (resp && resp.ok) return resp.json();
       return Promise.reject(resp.statusText);
@@ -68,6 +66,7 @@ const apiService = (service, op) => {
     .catch((err) => {
       loading.hide();
       error.render(err);
+      return Promise.reject();
     });
 };
 
@@ -145,26 +144,37 @@ const handleAccordion = ($a) => {
 // First some generic componets available for all routes
 
 const navBarHandler = ($navbar) => {
-  const $menu = $navbar.getElementsByClassName('navbar-nav')[0];
   const $toggleBtn = $navbar.getElementsByClassName('navbar-toggler')[0];
   const $collapse = $navbar.getElementsByClassName('navbar-collapse')[0];
   const $brand = $navbar.getElementsByClassName('navbar-brand')[0];
 
   let $navItemActive = null;
 
-  $menu.onclick = (ev) => {
+  const menuHandler = (ev) => {
     ev.preventDefault();
-    const navItem = ev.target.closest('.nav-item');
-    const { path } = navItem.dataset;
+    const path = ev.target.pathname;
     if (path === location.pathname) return;
 
     $navItemActive?.classList.remove('active');
-    $navItemActive = navItem;
-    $navItemActive.classList.add('active');
 
-    $collapse.classList.remove('show');
-    router.push(path);
+    switch (path) {
+      case '/logout':
+        apiService('auth', {
+          op: 'logout',
+        }).then(logout, logout);
+      default:
+        const navItem = ev.target.closest('.nav-item');
+        $navItemActive = navItem;
+        $navItemActive.classList.add('active');
+
+        $collapse.classList.remove('show');
+        router.push(path);
+        break;
+    }
   };
+  Array.from($navbar.getElementsByClassName('navbar-nav')).forEach(($menu) => {
+    $menu.onclick = menuHandler;
+  });
 
   $toggleBtn.onclick = (ev) => {
     ev.preventDefault();
@@ -242,6 +252,63 @@ const confirmarHandler = ($confirm) => {
 const confirmar = confirmarHandler(D.getElementById('confirm'));
 
 // Now app-related handlers
+
+const loginHandler = ($login) => {
+  const $form = $login.getElementsByTagName('form')[0];
+  const $submit = $login.getElementsByTagName('button')[0];
+
+  $form.onsubmit = (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if ($form.checkValidity()) {
+      $form.classList.add('was-validated');
+      const data = Array.from($form.elements).reduce(
+        (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
+        {}
+      );
+
+      apiService('auth', {
+        op: 'login',
+        data,
+      })
+        .then((user) => {
+          if (user) {
+            const $navbar = D.getElementById('navbar');
+            $navbar.classList.add('is-logged-in');
+            $navbar.getElementsByClassName('user-name')[0].textContent =
+              user.nombre;
+
+            router.replace('/');
+          }
+        })
+        .catch(() => null);
+    }
+  };
+
+  for (let $input of $form.getElementsByTagName('input')) {
+    $input.onkeydown = (ev) => {
+      $form.classList.remove('was-validated');
+      $submit.disabled = true;
+      for (let $i of $form.getElementsByTagName('input')) {
+        if ($i.value !== $i.dataset.value) {
+          $submit.disabled = false;
+          break;
+        }
+      }
+    };
+  }
+
+  const render = () => {
+    $form.classList.remove('was-validated');
+    _show($login);
+  };
+
+  return {
+    render,
+    hide: () => _hide($login),
+  };
+};
+
 const listVendedoresHandler = ($listVendedores) => {
   const $tableVendedores = D.getElementById('tableVendedores');
   const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
@@ -272,7 +339,7 @@ const listVendedoresHandler = ($listVendedores) => {
                 apiService('vendedores', {
                   op: 'remove',
                   id,
-                })
+                }).catch(() => null)
               );
             })
             .then((result) => {
@@ -295,23 +362,25 @@ const listVendedoresHandler = ($listVendedores) => {
     _show($listVendedores);
     apiService('vendedores', {
       op: 'list',
-    }).then((vendedores) => {
-      const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
-      $$tr.forEach(($row, index) => {
-        if (index >= vendedores.length) {
-          $row.classList.add('hidden');
-        } else {
-          $row.classList.remove('hidden');
-          fillRow($row, vendedores[index]);
-        }
-      });
+    })
+      .then((vendedores) => {
+        const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
+        $$tr.forEach(($row, index) => {
+          if (index >= vendedores.length) {
+            $row.classList.add('hidden');
+          } else {
+            $row.classList.remove('hidden');
+            fillRow($row, vendedores[index]);
+          }
+        });
 
-      vendedores.slice($$tr.length).forEach((v) => {
-        const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
-        fillRow($row, v);
-        $tbodyVendedores.append($row);
-      });
-    });
+        vendedores.slice($$tr.length).forEach((v) => {
+          const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
+          fillRow($row, v);
+          $tbodyVendedores.append($row);
+        });
+      })
+      .catch(() => null);
   };
   return {
     render,
@@ -340,13 +409,15 @@ const showVendedorHandler = ($showVendedor) => {
     apiService('vendedores', {
       op: 'get',
       id,
-    }).then((v) => {
-      if (v) {
-        $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
-        $showVendedor.getElementsByClassName('email')[0].value = v.email;
-        _show($showVendedor);
-      }
-    });
+    })
+      .then((v) => {
+        if (v) {
+          $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
+          $showVendedor.getElementsByClassName('email')[0].value = v.email;
+          _show($showVendedor);
+        }
+      })
+      .catch(() => null);
   };
 
   return {
@@ -384,15 +455,17 @@ const editVendedorHandler = ($editVendedor) => {
         op: isNew ? 'create' : 'update',
         id: data.id,
         data,
-      }).then((data) => {
-        if (data) {
-          if (isNew) {
-            router.replace(`/vendedor/edit/${data.id}`);
-          } else {
-            setFields(data);
+      })
+        .then((data) => {
+          if (data) {
+            if (isNew) {
+              router.replace(`/vendedor/edit/${data.id}`);
+            } else {
+              setFields(data);
+            }
           }
-        }
-      });
+        })
+        .catch(() => null);
     }
   };
 
@@ -415,11 +488,13 @@ const editVendedorHandler = ($editVendedor) => {
       apiService('vendedores', {
         op: 'get',
         id,
-      }).then((v) => {
-        $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
-        setFields(v);
-        _show($editVendedor);
-      });
+      })
+        .then((v) => {
+          $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
+          setFields(v);
+          _show($editVendedor);
+        })
+        .catch(() => null);
     } else {
       $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
       setFields();
@@ -463,7 +538,7 @@ const listVentasHandler = ($listVentas) => {
                 apiService('ventas', {
                   op: 'remove',
                   id,
-                })
+                }).catch(() => null)
               );
             })
             .then((result) => {
@@ -506,28 +581,30 @@ const listVentasHandler = ($listVentas) => {
     apiService('ventas', {
       op: 'list',
       options,
-    }).then((ventas) => {
-      const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
-      $$tr.forEach(($row, index) => {
-        if (index >= ventas.length) {
-          $row.classList.add('hidden');
-        } else {
-          $row.classList.remove('hidden');
-          fillRow($row, ventas[index]);
-        }
-      });
+    })
+      .then((ventas) => {
+        const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
+        $$tr.forEach(($row, index) => {
+          if (index >= ventas.length) {
+            $row.classList.add('hidden');
+          } else {
+            $row.classList.remove('hidden');
+            fillRow($row, ventas[index]);
+          }
+        });
 
-      ventas.slice($$tr.length).forEach((v) => {
-        const $row = $tplVentas.content.cloneNode(true).firstElementChild;
-        fillRow($row, v);
-        $tbodyVentas.append($row);
-      });
-      Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
-        ($el) => {
-          $el.classList.toggle('hidden', !!options.idVendedor);
-        }
-      );
-    });
+        ventas.slice($$tr.length).forEach((v) => {
+          const $row = $tplVentas.content.cloneNode(true).firstElementChild;
+          fillRow($row, v);
+          $tbodyVentas.append($row);
+        });
+        Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
+          ($el) => {
+            $el.classList.toggle('hidden', !!options.idVendedor);
+          }
+        );
+      })
+      .catch(() => null);
   };
   return {
     render,
@@ -544,6 +621,11 @@ const routes = [
     path: '/',
     module: showAndHideHandler(D.getElementById('welcome')),
     heading: 'Welcome',
+  },
+  {
+    path: '/login',
+    module: loginHandler(D.getElementById('login')),
+    heading: 'Login',
   },
   {
     path: '/vendedores',
