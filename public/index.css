@@ -26,3 +26,15 @@
   /* bi-caret-down-fill */
   content: '\f229';
 }
+
+.is-logged-in .logged-out {
+  display: none;
+}
+
+.is-logged-in .logged-in {
+  display: block;
+}
+
+.logged-in {
+  display: none;
+}
