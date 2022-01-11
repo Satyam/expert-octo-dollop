@@ -20,6 +20,15 @@ export function hash(data) {
 
 const safeFields = ['id', 'nombre', 'email'];
 
+export const checkValidUser = (email, password) =>
+  getDb().then((db) =>
+    db.get(
+      `select ${safeFields.join(',')}
+     from ${TABLE_USERS} where lower(email) = lower(?) and password = ?`,
+      [email, hash(password.toLowerCase())]
+    )
+  );
+
 export default function ({ op, ...rest }) {
   const fns = {
     list: () => listAll(TABLE_USERS, safeFields),
@@ -29,14 +38,6 @@ export default function ({ op, ...rest }) {
       createWithCuid(TABLE_USERS, hashPassword(data), safeFields),
     update: ({ id, data }) =>
       updateById(TABLE_USERS, id, hashPassword(data), safeFields),
-    checkValidUser: ({ data }) =>
-      getDb().then((db) =>
-        db.get(
-          `select ${safeFields.join(',')}
-           from ${TABLE_USERS} where lower(email) = lower(?) and password = ?`,
-          [data.email, hash(data.password.toLowerCase())]
-        )
-      ),
   };
   const fn = fns[op];
   if (fn) return fn(rest);

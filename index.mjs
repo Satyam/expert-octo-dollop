@@ -1,15 +1,25 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { join } from 'path';
+import auth, { authMiddleware } from './data/auth.mjs';
 import vendedores from './data/vendedores.mjs';
 import ventas from './data/ventas.mjs';
 import users from './data/user.mjs';
+import dotEnv from 'dotenv';
 
 const app = express();
 const port = 3000;
 
-app.post('/api/*', express.json(), (req, res) => {
+dotEnv.config();
+
+app.use(cookieParser());
+
+app.post('/api/*', express.json(), authMiddleware, (req, res) => {
   let response;
   switch (req.path.replace('/api/', '')) {
+    case 'auth':
+      response = auth(req.body, res);
+      break;
     case 'vendedores':
       response = vendedores(req.body);
       break;
@@ -28,9 +38,10 @@ app.post('/api/*', express.json(), (req, res) => {
   }
   response
     .then((resp) => res.json(resp))
-    .catch(() =>
-      res.status(400).send(`In "${req.path}", invalid op "${req.body.op}"`)
-    );
+    .catch((err) => {
+      console.error(err);
+      res.status(400).send(`In "${req.path}", invalid op "${req.body.op}"`);
+    });
 });
 
 app.use(
