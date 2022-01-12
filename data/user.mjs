@@ -29,16 +29,17 @@ export const checkValidUser = (email, password) =>
     )
   );
 
+const fns = {
+  list: () => listAll(TABLE_USERS, safeFields),
+  remove: ({ id }) => deleteById(TABLE_USERS, id),
+  get: ({ id }) => getById(TABLE_USERS, id, safeFields),
+  create: ({ data }) =>
+    createWithCuid(TABLE_USERS, hashPassword(data), safeFields),
+  update: ({ id, data }) =>
+    updateById(TABLE_USERS, id, hashPassword(data), safeFields),
+};
+
 export default function ({ op, ...rest }) {
-  const fns = {
-    list: () => listAll(TABLE_USERS, safeFields),
-    remove: ({ id }) => deleteById(TABLE_USERS, id),
-    get: ({ id }) => getById(TABLE_USERS, id, safeFields),
-    create: ({ data }) =>
-      createWithCuid(TABLE_USERS, hashPassword(data), safeFields),
-    update: ({ id, data }) =>
-      updateById(TABLE_USERS, id, hashPassword(data), safeFields),
-  };
   const fn = fns[op];
   if (fn) return fn(rest);
   return Promise.reject('not found');
