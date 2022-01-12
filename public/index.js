@@ -6,10 +6,10 @@ const D = document;
 const setTitle = (title) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
-const _show = ($) => {
+const show = ($) => {
   $.style.display = 'block';
 };
-const _hide = ($) => {
+const hide = ($) => {
   $.style.display = 'none';
 };
 
@@ -60,11 +60,11 @@ const apiService = (service, op) => {
     })
     .then((resp) => {
       if (resp.error) return Promise.reject(resp.data);
-      loading.hide();
+      loading.close();
       return resp.data;
     })
     .catch((err) => {
-      loading.hide();
+      loading.close();
       error.render(err);
       return Promise.reject();
     });
@@ -190,8 +190,8 @@ const navBarHandler = ($navbar) => {
 // Generic for components that just need showing and hiding
 const showAndHideHandler = ($el) => {
   return {
-    render: () => _show($el),
-    hide: () => _hide($el),
+    render: () => show($el),
+    close: () => hide($el),
   };
 };
 
@@ -201,16 +201,16 @@ const errorHandler = ($error) => {
   return {
     render: (msg) => {
       $error.getElementsByClassName('msg')[0].textContent = msg;
-      _show($error);
+      show($error);
     },
-    hide: () => _hide($error),
+    close: () => hide($error),
   };
 };
 
 const error = errorHandler(D.getElementById('error'));
 
 const confirmarHandler = ($confirm) => {
-  const hide = () => {
+  const close = () => {
     $confirm.classList.remove('show');
     $confirm.style.display = 'none';
   };
@@ -234,11 +234,11 @@ const confirmarHandler = ($confirm) => {
         const $t = ev.target.closest('.action');
         switch ($t?.dataset.action) {
           case 'yes':
-            hide();
+            close();
             resolve(true);
             break;
           case 'no':
-            hide();
+            close();
             resolve(false);
             break;
         }
@@ -246,7 +246,7 @@ const confirmarHandler = ($confirm) => {
     });
   return {
     ask,
-    hide,
+    close,
   };
 };
 const confirmar = confirmarHandler(D.getElementById('confirm'));
@@ -300,12 +300,12 @@ const loginHandler = ($login) => {
 
   const render = () => {
     $form.classList.remove('was-validated');
-    _show($login);
+    show($login);
   };
 
   return {
     render,
-    hide: () => _hide($login),
+    close: () => hide($login),
   };
 };
 
@@ -359,7 +359,7 @@ const listVendedoresHandler = ($listVendedores) => {
   };
   const render = () => {
     setTitle('Vendedores');
-    _show($listVendedores);
+    show($listVendedores);
     apiService('vendedores', {
       op: 'list',
     })
@@ -384,7 +384,7 @@ const listVendedoresHandler = ($listVendedores) => {
   };
   return {
     render,
-    hide: () => _hide($listVendedores),
+    close: () => hide($listVendedores),
   };
 };
 
@@ -414,7 +414,7 @@ const showVendedorHandler = ($showVendedor) => {
         if (v) {
           $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
           $showVendedor.getElementsByClassName('email')[0].value = v.email;
-          _show($showVendedor);
+          show($showVendedor);
         }
       })
       .catch(() => null);
@@ -422,9 +422,9 @@ const showVendedorHandler = ($showVendedor) => {
 
   return {
     render,
-    hide: () => {
+    close: () => {
       closeAllPanels();
-      _hide($showVendedor);
+      hide($showVendedor);
     },
   };
 };
@@ -492,19 +492,19 @@ const editVendedorHandler = ($editVendedor) => {
         .then((v) => {
           $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
           setFields(v);
-          _show($editVendedor);
+          show($editVendedor);
         })
         .catch(() => null);
     } else {
       $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
       setFields();
-      _show($editVendedor);
+      show($editVendedor);
     }
   };
 
   return {
     render,
-    hide: () => _hide($editVendedor),
+    close: () => hide($editVendedor),
   };
 };
 
@@ -576,7 +576,7 @@ const listVentasHandler = ($listVentas) => {
   };
   const render = (options) => {
     setTitle('Ventas');
-    _show($listVentas);
+    show($listVentas);
 
     apiService('ventas', {
       op: 'list',
@@ -608,7 +608,7 @@ const listVentasHandler = ($listVentas) => {
   };
   return {
     render,
-    hide: () => _hide($listVentas),
+    close: () => hide($listVentas),
   };
 };
 
@@ -677,14 +677,14 @@ let currentModule = null;
 let currentPath = '';
 
 function matchPath(refresh) {
-  error.hide(); // Just in case there is any open
+  error.close(); // Just in case there is any open
   const path = location.pathname;
   const fullPath = path + location.search;
   if (refresh || fullPath !== currentPath) {
     currentPath = fullPath;
     routes.some((r) => {
       if (r.$_rx.test(path)) {
-        currentModule?.hide();
+        currentModule?.close();
         currentModule = r.module;
         currentModule.render({
           ...(path.match(r.$_rx)?.groups || {}),
