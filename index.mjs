@@ -14,35 +14,28 @@ dotEnv.config();
 
 app.use(cookieParser());
 
-app.post('/api/*', express.json(), authMiddleware, (req, res) => {
-  let response;
-  switch (req.path.replace('/api/', '')) {
-    case 'auth':
-      response = auth(req.body, res);
-      break;
-    case 'vendedores':
-      response = vendedores(req.body);
-      break;
-    case 'ventas':
-      response = ventas(req.body);
-      break;
-    case 'users':
-      response = users(req.body);
-      break;
-    case 'verify':
-      res.send('ok');
-      return;
-    default:
-      res.status(404).send(`Not found ${req.path}`);
-      return;
-  }
-  response
-    .then((resp) => res.json(resp))
-    .catch((err) => {
-      console.error(err);
-      res.status(400).send(`In "${req.path}", invalid op "${req.body.op}"`);
+const INVALID_OP = 400;
+
+const postHandler = (fns) => (req, res) => {
+  const { op, ...rest } = req.body;
+  const fn = fns[op];
+  if (fn) fn(rest, req, res).then((resp) => res.json(resp));
+  else
+    res.status(INVALID_OP).json({
+      error: INVALID_OP,
+      data: `In "${req.path}", invalid op "${op}"`,
     });
-});
+};
+
+app.post('/api/auth', express.json(), postHandler(auth));
+app.post(
+  '/api/vendedores',
+  express.json(),
+  authMiddleware,
+  postHandler(vendedores)
+);
+app.post('/api/ventas', express.json(), authMiddleware, postHandler(ventas));
+app.post('/api/users', express.json(), authMiddleware, postHandler(users));
 
 app.use(
   '/bootstrap',

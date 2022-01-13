@@ -7,16 +7,10 @@ import {
   deleteById,
 } from './utils.mjs';
 
-const fns = {
+export default {
   list: () => listAll(TABLE_VENDEDORES),
   remove: ({ id }) => deleteById(TABLE_VENDEDORES, id),
   get: ({ id }) => getById(TABLE_VENDEDORES, id),
   create: ({ data }) => createWithCuid(TABLE_VENDEDORES, data),
   update: ({ id, data }) => updateById(TABLE_VENDEDORES, id, data),
 };
-
-export default function ({ op, ...rest }) {
-  const fn = fns[op];
-  if (fn) return fn(rest);
-  return Promise.reject('not found');
-}

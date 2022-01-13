@@ -8,7 +8,7 @@ import {
   deleteById,
 } from './utils.mjs';
 
-const fns = {
+export default {
   list: ({ options }) =>
     getDb()
       .then((db) =>
@@ -35,9 +35,3 @@ const fns = {
   create: ({ data }) => createWithCuid(TABLE_VENTAS, data),
   update: ({ id, data }) => updateById(TABLE_VENTAS, id, data),
 };
-
-export default function ({ op, ...rest }) {
-  const fn = fns[op];
-  if (fn) return fn(rest);
-  return Promise.reject('not found');
-}

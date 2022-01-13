@@ -29,7 +29,7 @@ export const checkValidUser = (email, password) =>
     )
   );
 
-const fns = {
+export default {
   list: () => listAll(TABLE_USERS, safeFields),
   remove: ({ id }) => deleteById(TABLE_USERS, id),
   get: ({ id }) => getById(TABLE_USERS, id, safeFields),
@@ -38,9 +38,3 @@ const fns = {
   update: ({ id, data }) =>
     updateById(TABLE_USERS, id, hashPassword(data), safeFields),
 };
-
-export default function ({ op, ...rest }) {
-  const fn = fns[op];
-  if (fn) return fn(rest);
-  return Promise.reject('not found');
-}

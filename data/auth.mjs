@@ -4,7 +4,6 @@ import { checkValidUser } from './user.mjs';
 const UNAUTHORIZED = 401;
 
 export const authMiddleware = (req, res, next) => {
-  if (req.path === '/api/auth' && req.body.op === 'login') return void next();
   const token = req.cookies[process.env.SESSION_COOKIE];
   const unauthorised = () =>
     res.json({
@@ -23,8 +22,8 @@ export const authMiddleware = (req, res, next) => {
   } else unauthorised();
 };
 
-const fns = {
-  login: ({ data }, res) => {
+export default {
+  login: ({ data }, req, res) => {
     return checkValidUser(data.email, data.password).then((user) => {
       res.cookie(
         process.env.SESSION_COOKIE,
@@ -39,14 +38,8 @@ const fns = {
       return { data: user };
     });
   },
-  logout: (_, res) => {
+  logout: (_, req, res) => {
     res.clearCookie(process.env.SESSION_COOKIE);
     return Promise.resolve({ data: {} });
   },
 };
-
-export default function ({ op, ...rest }, res) {
-  const fn = fns[op];
-  if (fn) return fn(rest, res);
-  return Promise.reject('not found');
-}
