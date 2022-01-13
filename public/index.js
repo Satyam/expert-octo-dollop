@@ -273,11 +273,11 @@ const loginHandler = ($login) => {
       })
         .then((user) => {
           if (user) {
+            const $container = D.getElementById('container');
+            $container.classList.replace('not-logged-in', 'is-logged-in');
             const $navbar = D.getElementById('navbar');
-            $navbar.classList.add('is-logged-in');
             $navbar.getElementsByClassName('user-name')[0].textContent =
               user.nombre;
-
             router.replace('/');
           }
         })

@@ -15,7 +15,7 @@
     <script src="/index.js" defer></script>
   </head>
   <body>
-    <div class="container">
+    <div id="container" class="container not-logged-in">
       <nav id="navbar" class="navbar navbar-light navbar-expand-lg">
         <a class="navbar-brand" href="#"
           ><img src="/La Corazon.png" alt="La Corazón" /> La Corazón</a
@@ -24,7 +24,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto">
+          <ul class="navbar-nav me-auto logged-in">
             <li class="nav-item">
               <a class="nav-link" href="/usuarios">Usuarios</a>
             </li>
@@ -38,7 +38,7 @@
               <a class="nav-link" href="/ventas">Ventas</a>
             </li>
           </ul>
-          <span class="navbar-text">
+          <span class="navbar-text ms-auto">
             <i class="bi bi-person-x logged-out"> Invitado</i>
             <i class="bi bi-person-check-fill logged-in">
               <span class="user-name"></span

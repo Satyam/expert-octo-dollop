@@ -31,10 +31,6 @@
   display: none;
 }
 
-.is-logged-in .logged-in {
-  display: block;
-}
-
-.logged-in {
+.not-logged-in .logged-in {
   display: none;
 }
