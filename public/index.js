@@ -41,7 +41,7 @@ const router = {
 };
 
 const logout = () => {
-  // To ensure everything is erased, really navigate:
+  // To ensure everything is erased, do actually navigate and get everything refreshed
   location.replace('/');
 };
 
@@ -251,7 +251,29 @@ const confirmarHandler = ($confirm) => {
 };
 const confirmar = confirmarHandler(D.getElementById('confirm'));
 
-// Now app-related handlers
+const setUser = (user) => {
+  if (user) {
+    const $container = D.getElementById('container');
+    $container.classList.replace('not-logged-in', 'is-logged-in');
+    const $navbar = D.getElementById('navbar');
+    $navbar.getElementsByClassName('user-name')[0].textContent = user.nombre;
+  }
+};
+const checkLoggedIn = () =>
+  apiService('auth', {
+    op: 'isLoggedIn',
+  })
+    .then((user) => {
+      setUser(user);
+    })
+    .then(() => {
+      setTimeout(checkLoggedIn, 1_800_000);
+    })
+    .catch((err) => {
+      console.error('checkLoggedIn', err);
+    });
+
+checkLoggedIn();
 
 const loginHandler = ($login) => {
   const $form = $login.getElementsByTagName('form')[0];
@@ -271,15 +293,9 @@ const loginHandler = ($login) => {
         op: 'login',
         data,
       })
-        .then((user) => {
-          if (user) {
-            const $container = D.getElementById('container');
-            $container.classList.replace('not-logged-in', 'is-logged-in');
-            const $navbar = D.getElementById('navbar');
-            $navbar.getElementsByClassName('user-name')[0].textContent =
-              user.nombre;
-            router.replace('/');
-          }
+        .then(setUser)
+        .then(() => {
+          router.replace('/');
         })
         .catch(() => null);
     }
@@ -308,6 +324,8 @@ const loginHandler = ($login) => {
     close: () => hide($login),
   };
 };
+
+// Now app-related handlers
 
 const listVendedoresHandler = ($listVendedores) => {
   const $tableVendedores = D.getElementById('tableVendedores');
