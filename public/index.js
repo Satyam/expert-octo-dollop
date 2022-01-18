@@ -71,11 +71,24 @@ const apiService = (service, op) => {
 };
 
 const handleAccordion = ($a) => {
-  const panels = Array.from($a.getElementsByClassName('card-header')).reduce(
-    (ps, $ch) => ({
-      ...ps,
-      [$ch.dataset.panel]: $ch,
-    }),
+  const toggleHandler = (ev) => {
+    const $d = ev.target;
+    const panelName = $d.dataset.panel;
+    if ($d.open) {
+      openPanel(panelName);
+    } else {
+      closePanel(panelName);
+    }
+  };
+
+  const panels = Array.from($a.getElementsByTagName('details')).reduce(
+    ($$ps, $p) => {
+      $p.addEventListener('toggle', toggleHandler);
+      return {
+        ...$$ps,
+        [$p.dataset.panel]: $p,
+      };
+    },
     {}
   );
 
@@ -86,9 +99,8 @@ const handleAccordion = ($a) => {
     if (!$panel) return;
     if (panelName === currentOpen) {
       currentOpen = null;
-      $panel.classList.remove('is-open');
-      $panel.nextElementSibling.classList.remove('show');
-      $panel.nextElementSibling.firstElementChild.dispatchEvent(
+      $panel.open = false;
+      $panel.children[1].dispatchEvent(
         new CustomEvent('closePanel', {
           bubbles: true,
           detail: panelName,
@@ -102,9 +114,8 @@ const handleAccordion = ($a) => {
     if (!$panel) return;
     if (currentOpen) closePanel(currentOpen);
     currentOpen = panelName;
-    $panel.classList.add('is-open');
-    $panel.nextElementSibling.classList.add('show');
-    $panel.nextElementSibling.firstElementChild.dispatchEvent(
+    $panel.open = true;
+    $panel.children[1].dispatchEvent(
       new CustomEvent('openPanel', {
         bubbles: true,
         detail: panelName,
@@ -121,14 +132,6 @@ const handleAccordion = ($a) => {
   };
 
   const closeAllPanels = () => closePanel(currentOpen);
-
-  $a.onclick = (ev) => {
-    ev.preventDefault();
-    const $panel = ev.target.closest('.card-header');
-    if (!$panel) return;
-    const panelName = $panel.dataset.panel;
-    togglePanel(panelName);
-  };
 
   return {
     openPanel,
