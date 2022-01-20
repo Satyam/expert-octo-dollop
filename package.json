@@ -6,7 +6,8 @@
   "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ."
+    "start": "nodemon .",
+    "build": "swc ./src/index.ts -w -o ./public/index.js"
   },
   "repository": {
     "type": "git",
@@ -29,5 +30,10 @@
     "nodemon": "^2.0.15",
     "sqlite": "^4.0.23",
     "sqlite3": "^4.2.0"
+  },
+  "devDependencies": {
+    "@swc/cli": "^0.1.55",
+    "@swc/core": "^1.2.131",
+    "chokidar": "^3.5.3"
   }
 }
