@@ -1,26 +1,5 @@
-// import type { ID, User, Vendedor, Venta } from './types';
-type ID = string | number;
-type User = {
-  id: ID;
-  nombre: string;
-  email?: string;
-  password?: string;
-};
-type Vendedor = {
-  id: ID;
-  nombre: string;
-  email?: string;
-};
-type Venta = {
-  id: ID;
-  concepto?: string;
-  fecha: Date;
-  idVendedor?: ID;
-  cantidad?: number;
-  precioUnitario?: number;
-  iva?: boolean;
-};
-// Constants
+import type { ID, User, Vendedor, Venta } from './types';
+
 const W = window;
 
 // Helpers
