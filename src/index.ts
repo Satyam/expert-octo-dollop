@@ -1,15 +1,65 @@
+// import type { ID, User, Vendedor, Venta } from './types';
+type ID = string | number;
+type User = {
+  id: ID;
+  nombre: string;
+  email?: string;
+  password?: string;
+};
+type Vendedor = {
+  id: ID;
+  nombre: string;
+  email?: string;
+};
+type Venta = {
+  id: ID;
+  concepto?: string;
+  fecha: Date;
+  idVendedor?: ID;
+  cantidad?: number;
+  precioUnitario?: number;
+  iva?: boolean;
+};
 // Constants
-const D = document;
+const W = window;
 
 // Helpers
+const getById = (id: string): HTMLElement => document.getElementById(id);
+const getFirstByClass = <T extends HTMLElement>(
+  $: Element | Document,
+  name: string
+): T => $.getElementsByClassName(name)[0] as T;
 
-const setTitle = (title) =>
+const getAllByClass = <T extends HTMLElement>(
+  $: Element | Document,
+  name: string
+): Array<T> => Array.from($.getElementsByClassName(name)) as T[];
+
+const getFirstByTag = <T extends HTMLElement>(
+  $: Element | Document,
+  name: string
+): T => $.getElementsByTagName(name)[0] as T;
+
+const getAllByTag = <T extends HTMLElement>(
+  $: Element | Document,
+  name: string
+): Array<T> => Array.from($.getElementsByTagName(name)) as T[];
+
+const getClosest = <T extends HTMLElement>($: Element, selector: string): T =>
+  $.closest(selector) as T;
+
+const getTarget = <T extends HTMLElement>(ev: Event): T => ev.target as T;
+
+const cloneTemplate = <T extends HTMLElement>($tpl: HTMLTemplateElement) =>
+  ($tpl.content.cloneNode(true) as HTMLElement).firstElementChild as T;
+
+const setTitle = (title?: string) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
-const show = ($) => {
+const show = ($: HTMLElement) => {
   $.style.display = 'block';
 };
-const hide = ($) => {
+const hide = ($: HTMLElement) => {
   $.style.display = 'none';
 };
 
@@ -20,21 +70,22 @@ const dateFormatter = new Intl.DateTimeFormat(locale, {
   dateStyle: 'medium',
 });
 
-const formatDate = (date) => (date ? dateFormatter.format(date) : '');
+const formatDate = (date: Date) => (date ? dateFormatter.format(date) : '');
 
 const currFormatter = new Intl.NumberFormat(locale, {
   style: 'currency',
   currency,
 });
 
-const formatCurrency = (value) => (value ? currFormatter.format(value) : '');
+const formatCurrency = (value: number) =>
+  value ? currFormatter.format(value) : '';
 
 const router = {
-  push: (path, refresh) => {
+  push: (path: string, refresh?: boolean) => {
     history.pushState({ path }, '', path);
     matchPath(refresh);
   },
-  replace: (path, refresh) => {
+  replace: (path: string, refresh?: boolean) => {
     history.replaceState({ path }, '', path);
     matchPath(refresh);
   },
@@ -45,9 +96,21 @@ const logout = () => {
   location.replace('/');
 };
 
-const apiService = (service, op) => {
+const apiService = <
+  IN extends Record<string, any> = Record<string, any>,
+  OUT extends Record<string, any> = IN,
+  OPT extends Record<string, any> = Record<string, any>
+>(
+  service: string,
+  op: {
+    op: string;
+    id?: ID;
+    data?: IN;
+    options?: OPT;
+  }
+): Promise<OUT> => {
   loading.render();
-  return fetch(`${window.origin}/api/${service}`, {
+  return fetch(`${W.origin}/api/${service}`, {
     method: 'POST',
     headers: {
       'Content-type': 'application/json; charset=utf-8',
@@ -70,9 +133,9 @@ const apiService = (service, op) => {
     });
 };
 
-const handleAccordion = ($a) => {
-  const toggleHandler = (ev) => {
-    const $d = ev.target;
+const handleAccordion = ($a: HTMLElement) => {
+  const toggleHandler = (ev: Event) => {
+    const $d = getTarget<HTMLDetailsElement>(ev);
     const panelName = $d.dataset.panel;
     if ($d.open) {
       openPanel(panelName);
@@ -81,18 +144,15 @@ const handleAccordion = ($a) => {
     }
   };
 
-  const panels = Array.from($a.getElementsByTagName('details')).reduce(
-    ($$ps, $p) => {
-      $p.addEventListener('toggle', toggleHandler);
-      return {
-        ...$$ps,
-        [$p.dataset.panel]: $p,
-      };
-    },
-    {}
-  );
+  const panels = Array.from(getAllByTag($a, 'details')).reduce(($$ps, $p) => {
+    $p.addEventListener('toggle', toggleHandler);
+    return {
+      ...$$ps,
+      [$p.dataset.panel]: $p,
+    };
+  }, {});
 
-  let currentOpen;
+  let currentOpen: string | undefined | null;
 
   const closePanel = (panelName) => {
     const $panel = panels[panelName];
@@ -146,16 +206,16 @@ const handleAccordion = ($a) => {
 
 // First some generic componets available for all routes
 
-const navBarHandler = ($navbar) => {
-  const $toggleBtn = $navbar.getElementsByClassName('navbar-toggler')[0];
-  const $collapse = $navbar.getElementsByClassName('navbar-collapse')[0];
-  const $brand = $navbar.getElementsByClassName('navbar-brand')[0];
+const navBarHandler = ($navbar: HTMLElement) => {
+  const $toggleBtn = getFirstByClass($navbar, 'navbar-toggler');
+  const $collapse = getFirstByClass($navbar, 'navbar-collapse');
+  const $brand = getFirstByClass($navbar, 'navbar-brand');
 
   let $navItemActive = null;
 
-  const menuHandler = (ev) => {
+  const menuHandler: EventListener = (ev) => {
     ev.preventDefault();
-    const path = ev.target.pathname;
+    const path = getTarget<HTMLAnchorElement>(ev).pathname;
     if (path === location.pathname) return;
 
     $navItemActive?.classList.remove('active');
@@ -166,7 +226,7 @@ const navBarHandler = ($navbar) => {
           op: 'logout',
         }).then(logout, logout);
       default:
-        const navItem = ev.target.closest('.nav-item');
+        const navItem = getTarget(ev).closest('.nav-item');
         $navItemActive = navItem;
         $navItemActive.classList.add('active');
 
@@ -175,7 +235,8 @@ const navBarHandler = ($navbar) => {
         break;
     }
   };
-  Array.from($navbar.getElementsByClassName('navbar-nav')).forEach(($menu) => {
+
+  getAllByClass($navbar, 'navbar-nav').forEach(($menu) => {
     $menu.onclick = menuHandler;
   });
 
@@ -191,42 +252,41 @@ const navBarHandler = ($navbar) => {
 };
 
 // Generic for components that just need showing and hiding
-const showAndHideHandler = ($el) => {
+const showAndHideHandler: Module = ($el: HTMLElement) => {
   return {
     render: () => show($el),
     close: () => hide($el),
   };
 };
 
-const loading = showAndHideHandler(D.getElementById('loading'));
+const loading = showAndHideHandler(getById('loading'));
 
-const errorHandler = ($error) => {
+const errorHandler = ($error: HTMLElement) => {
   return {
-    render: (msg) => {
-      $error.getElementsByClassName('msg')[0].textContent = msg;
+    render: (msg: string) => {
+      getFirstByClass($error, 'msg').textContent = msg;
       show($error);
     },
     close: () => hide($error),
   };
 };
 
-const error = errorHandler(D.getElementById('error'));
+const error = errorHandler(getById('error'));
 
-const confirmarHandler = ($confirm) => {
+const confirmarHandler = ($confirm: HTMLElement) => {
   const close = () => {
     $confirm.classList.remove('show');
     $confirm.style.display = 'none';
   };
-  const ask = (msg, header, danger) =>
+  const ask = (msg: string, header: string, danger?: boolean) =>
     new Promise((resolve) => {
-      $confirm.getElementsByClassName('modal-body')[0].textContent = msg;
-      $confirm.getElementsByClassName('modal-title')[0].textContent =
+      getFirstByClass($confirm, 'modal-body').textContent = msg;
+      getFirstByClass($confirm, 'modal-title').textContent =
         header ?? '¿Está seguro?';
-      const $headerClass =
-        $confirm.getElementsByClassName('modal-header')[0].classList;
+      const $headerClass = getFirstByClass($confirm, 'modal-header').classList;
       $headerClass.toggle('bg-danger', danger);
       $headerClass.toggle('text-white', danger);
-      $yesClass = $confirm.getElementsByClassName('yes')[0].classList;
+      const $yesClass = getFirstByClass($confirm, 'yes').classList;
       $yesClass.toggle('btn-danger', danger);
       $yesClass.toggle('btn-primary', !danger);
 
@@ -234,7 +294,7 @@ const confirmarHandler = ($confirm) => {
       $confirm.classList.add('show');
       $confirm.onclick = (ev) => {
         ev.preventDefault();
-        const $t = ev.target.closest('.action');
+        const $t = getClosest(getTarget(ev), '.action');
         switch ($t?.dataset.action) {
           case 'yes':
             close();
@@ -252,18 +312,18 @@ const confirmarHandler = ($confirm) => {
     close,
   };
 };
-const confirmar = confirmarHandler(D.getElementById('confirm'));
+const confirmar = confirmarHandler(getById('confirm'));
 
 const setUser = (user) => {
   if (user) {
-    const $container = D.getElementById('container');
+    const $container = getById('container');
     $container.classList.replace('not-logged-in', 'is-logged-in');
-    const $navbar = D.getElementById('navbar');
-    $navbar.getElementsByClassName('user-name')[0].textContent = user.nombre;
+    const $navbar = getById('navbar');
+    getFirstByClass($navbar, 'user-name').textContent = user.nombre;
   }
 };
 const checkLoggedIn = () =>
-  apiService('auth', {
+  apiService<{}, User>('auth', {
     op: 'isLoggedIn',
   })
     .then((user) => {
@@ -278,21 +338,21 @@ const checkLoggedIn = () =>
 
 checkLoggedIn();
 
-const loginHandler = ($login) => {
-  const $form = $login.getElementsByTagName('form')[0];
-  const $submit = $login.getElementsByTagName('button')[0];
+const loginHandler: Module = ($login) => {
+  const $form = getFirstByTag<HTMLFormElement>($login, 'form');
+  const $submit = getFirstByTag<HTMLButtonElement>($login, 'button');
 
   $form.onsubmit = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
     if ($form.checkValidity()) {
       $form.classList.add('was-validated');
-      const data = Array.from($form.elements).reduce(
+      const data = getAllByTag<HTMLInputElement>($form, 'input').reduce(
         (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
         {}
       );
 
-      apiService('auth', {
+      apiService<Partial<User>>('auth', {
         op: 'login',
         data,
       })
@@ -304,18 +364,18 @@ const loginHandler = ($login) => {
     }
   };
 
-  for (let $input of $form.getElementsByTagName('input')) {
-    $input.onkeydown = (ev) => {
+  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
+    $input.onkeydown = () => {
       $form.classList.remove('was-validated');
       $submit.disabled = true;
-      for (let $i of $form.getElementsByTagName('input')) {
+      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
         if ($i.value !== $i.dataset.value) {
           $submit.disabled = false;
-          break;
+          return true;
         }
-      }
+      });
     };
-  }
+  });
 
   const render = () => {
     $form.classList.remove('was-validated');
@@ -330,17 +390,20 @@ const loginHandler = ($login) => {
 
 // Now app-related handlers
 
-const listVendedoresHandler = ($listVendedores) => {
-  const $tableVendedores = D.getElementById('tableVendedores');
-  const $tbodyVendedores = $tableVendedores.getElementsByTagName('tbody')[0];
-  const $tplVendedores = D.getElementById('tplVendedores');
+const listVendedoresHandler: Module = ($listVendedores) => {
+  const $tableVendedores = getById('tableVendedores');
+  const $tbodyVendedores = getFirstByTag<HTMLTableSectionElement>(
+    $tableVendedores,
+    'tbody'
+  );
+  const $tplVendedores = getById('tplVendedores') as HTMLTemplateElement;
 
   $tableVendedores.onclick = (ev) => {
     ev.preventDefault();
-    const $t = ev.target;
-    const action = $t.closest('.action')?.dataset.action;
+    const $t = getTarget(ev);
+    const action = getClosest($t, '.action')?.dataset.action;
     if (action) {
-      const id = $t.closest('tr').dataset.id;
+      const id = getClosest($t, 'tr').dataset.id;
       switch (action) {
         case 'add':
           router.push('/vendedor/new');
@@ -375,17 +438,17 @@ const listVendedoresHandler = ($listVendedores) => {
 
   const fillRow = ($row, v) => {
     $row.dataset.id = v.id;
-    $row.getElementsByClassName('nombre')[0].textContent = v.nombre;
-    $row.getElementsByClassName('email')[0].textContent = v.email;
+    getFirstByClass($row, 'nombre').textContent = v.nombre;
+    getFirstByClass($row, 'email').textContent = v.email;
   };
   const render = () => {
     setTitle('Vendedores');
     show($listVendedores);
-    apiService('vendedores', {
+    apiService<{}, Vendedor[]>('vendedores', {
       op: 'list',
     })
       .then((vendedores) => {
-        const $$tr = Array.from($tbodyVendedores.getElementsByTagName('tr'));
+        const $$tr = getAllByTag($tbodyVendedores, 'tr');
         $$tr.forEach(($row, index) => {
           if (index >= vendedores.length) {
             $row.classList.add('hidden');
@@ -396,7 +459,7 @@ const listVendedoresHandler = ($listVendedores) => {
         });
 
         vendedores.slice($$tr.length).forEach((v) => {
-          const $row = $tplVendedores.content.cloneNode(true).firstElementChild;
+          const $row = cloneTemplate<HTMLTableRowElement>($tplVendedores);
           fillRow($row, v);
           $tbodyVendedores.append($row);
         });
@@ -409,14 +472,16 @@ const listVendedoresHandler = ($listVendedores) => {
   };
 };
 
-const showVendedorHandler = ($showVendedor) => {
-  $panelVentas = D.getElementById('listVentas').cloneNode(true);
-  $accordion = $showVendedor.getElementsByClassName('accordion')[0];
+const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
+  const $panelVentas = <HTMLElement>getById('listVentas').cloneNode(true);
+  const $accordion = getFirstByClass($showVendedor, 'accordion');
   const { closeAllPanels } = handleAccordion($accordion);
 
   const render = ({ id }) => {
-    $accordion.addEventListener('openPanel', (ev) => {
-      const { detail: panelName, target: $panelBody } = ev;
+    $accordion.addEventListener('openPanel', ((ev: CustomEvent) => {
+      const $panelBody = getTarget(ev);
+      const panelName = ev.detail;
+      // const { detail: panelName, target: $panelBody } = ev;
       switch (panelName) {
         case 'ventas':
           if ($panelBody.children.length === 0) $panelBody.append($panelVentas);
@@ -425,16 +490,18 @@ const showVendedorHandler = ($showVendedor) => {
         case 'consigna':
           break;
       }
-    });
+    }) as EventListener);
     $accordion.addEventListener('close', console.log);
-    apiService('vendedores', {
+    apiService<{}, Vendedor>('vendedores', {
       op: 'get',
       id,
     })
       .then((v) => {
         if (v) {
-          $showVendedor.getElementsByClassName('nombre')[0].value = v.nombre;
-          $showVendedor.getElementsByClassName('email')[0].value = v.email;
+          getFirstByClass<HTMLInputElement>($showVendedor, 'nombre').value =
+            v.nombre;
+          getFirstByClass<HTMLInputElement>($showVendedor, 'email').value =
+            v.email;
           show($showVendedor);
         }
       })
@@ -450,12 +517,12 @@ const showVendedorHandler = ($showVendedor) => {
   };
 };
 
-const editVendedorHandler = ($editVendedor) => {
-  const $form = $editVendedor.getElementsByTagName('form')[0];
-  const $submit = $editVendedor.getElementsByTagName('button')[0];
+const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
+  const $form = getFirstByTag<HTMLFormElement>($editVendedor, 'form');
+  const $submit = getFirstByTag<HTMLButtonElement>($editVendedor, 'button');
 
   const setFields = (v) => {
-    Array.from($form.elements).forEach(($input) => {
+    getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
       $input.dataset.value = $input.value = v ? v[$input.name] : '';
     });
   };
@@ -465,14 +532,16 @@ const editVendedorHandler = ($editVendedor) => {
     ev.stopPropagation();
     if ($form.checkValidity()) {
       $form.classList.add('was-validated');
-      const data = Array.from($form.elements).reduce(
-        (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
-        {}
+      const data = <Partial<Vendedor>>(
+        getAllByTag<HTMLInputElement>($form, 'input').reduce(
+          (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
+          {}
+        )
       );
 
       const isNew = !data.id;
 
-      apiService('vendedores', {
+      apiService<Partial<Vendedor>>('vendedores', {
         op: isNew ? 'create' : 'update',
         id: data.id,
         data,
@@ -490,35 +559,35 @@ const editVendedorHandler = ($editVendedor) => {
     }
   };
 
-  for (let $input of $form.getElementsByTagName('input')) {
+  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
     $input.onkeydown = (ev) => {
       $form.classList.remove('was-validated');
       $submit.disabled = true;
-      for (let $i of $form.getElementsByTagName('input')) {
+      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
         if ($i.value !== $i.dataset.value) {
           $submit.disabled = false;
-          break;
+          return true;
         }
-      }
+      });
     };
-  }
+  });
 
   const render = ({ id }) => {
     $form.classList.remove('was-validated');
     if (id) {
-      apiService('vendedores', {
+      apiService<{}, Partial<Vendedor>>('vendedores', {
         op: 'get',
         id,
       })
         .then((v) => {
-          $form.getElementsByClassName('btn')[0].textContent = 'Modificar';
+          getFirstByClass($form, 'btn').textContent = 'Modificar';
           setFields(v);
           show($editVendedor);
         })
         .catch(() => null);
     } else {
-      $form.getElementsByClassName('btn')[0].textContent = 'Agregar';
-      setFields();
+      getFirstByClass($form, 'btn').textContent = 'Agregar';
+      $form.reset();
       show($editVendedor);
     }
   };
@@ -529,17 +598,20 @@ const editVendedorHandler = ($editVendedor) => {
   };
 };
 
-const listVentasHandler = ($listVentas) => {
-  const $tableVentas = D.getElementById('tableVentas');
-  const $tbodyVentas = $tableVentas.getElementsByTagName('tbody')[0];
-  const $tplVentas = D.getElementById('tplVentas');
+const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
+  const $tableVentas = getById('tableVentas');
+  const $tbodyVentas = getFirstByTag<HTMLTableSectionElement>(
+    $tableVentas,
+    'tbody'
+  );
+  const $tplVentas = getById('tplVentas') as HTMLTemplateElement;
 
   $tableVentas.onclick = (ev) => {
     ev.preventDefault();
-    const $t = ev.target;
-    const action = $t.closest('.action')?.dataset.action;
+    const $t = getTarget(ev);
+    const action = getClosest($t, '.action')?.dataset.action;
     if (action) {
-      const id = $t.closest('tr').dataset.id;
+      const id = getClosest($t, 'tr').dataset.id;
       switch (action) {
         case 'add':
           router.push('/venta/new');
@@ -569,7 +641,7 @@ const listVentasHandler = ($listVentas) => {
             });
           break;
         case 'showVendedor':
-          const idVendedor = $t.closest('.action')?.dataset.idVendedor;
+          const idVendedor = getClosest($t, '.action')?.dataset.idVendedor;
           router.push(`/vendedor/${idVendedor}`);
           break;
       }
@@ -578,33 +650,36 @@ const listVentasHandler = ($listVentas) => {
 
   const fillRow = ($row, v) => {
     $row.dataset.id = v.id;
-    $row.getElementsByClassName('fecha')[0].textContent = formatDate(
-      new Date(v.fecha)
-    );
-    $row.getElementsByClassName('concepto')[0].textContent = v.concepto;
-    $row.getElementsByClassName('vendedor')[0].textContent = v.vendedor;
-    $row.getElementsByClassName('idVendedor')[0].dataset.idVendedor =
-      v.idVendedor;
-    $row.getElementsByClassName('cantidad')[0].textContent = v.cantidad;
-    $row.getElementsByClassName('precioUnitario')[0].textContent =
+    getFirstByClass<HTMLTableCellElement>($row, 'fecha').textContent =
+      formatDate(new Date(v.fecha));
+    getFirstByClass<HTMLTableCellElement>($row, 'concepto').textContent =
+      v.concepto;
+    getFirstByClass<HTMLTableCellElement>($row, 'vendedor').textContent =
+      v.vendedor;
+    getFirstByClass<HTMLTableCellElement>(
+      $row,
+      'idVendedor'
+    ).dataset.idVendedor = v.idVendedor;
+    getFirstByClass<HTMLTableCellElement>($row, 'cantidad').textContent =
+      v.cantidad;
+    getFirstByClass<HTMLTableCellElement>($row, 'precioUnitario').textContent =
       formatCurrency(v.precioUnitario);
-    $row
-      .getElementsByClassName('iva')[0]
-      .classList.add(v.iva ? 'bi-check-square' : 'bi-square');
-    $row.getElementsByClassName('precioTotal')[0].textContent = formatCurrency(
-      v.cantidad * v.precioUnitario
+    getFirstByClass<HTMLTableCellElement>($row, 'iva').classList.add(
+      v.iva ? 'bi-check-square' : 'bi-square'
     );
+    getFirstByClass<HTMLTableCellElement>($row, 'precioTotal').textContent =
+      formatCurrency(v.cantidad * v.precioUnitario);
   };
   const render = (options) => {
     setTitle('Ventas');
     show($listVentas);
 
-    apiService('ventas', {
+    apiService<{}, Venta[]>('ventas', {
       op: 'list',
       options,
     })
       .then((ventas) => {
-        const $$tr = Array.from($tbodyVentas.getElementsByTagName('tr'));
+        const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVentas, 'tr');
         $$tr.forEach(($row, index) => {
           if (index >= ventas.length) {
             $row.classList.add('hidden');
@@ -615,15 +690,13 @@ const listVentasHandler = ($listVentas) => {
         });
 
         ventas.slice($$tr.length).forEach((v) => {
-          const $row = $tplVentas.content.cloneNode(true).firstElementChild;
+          const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
           fillRow($row, v);
           $tbodyVentas.append($row);
         });
-        Array.from($tableVentas.getElementsByClassName('idVendedor')).forEach(
-          ($el) => {
-            $el.classList.toggle('hidden', !!options.idVendedor);
-          }
-        );
+        getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
+          $el.classList.toggle('hidden', !!options.idVendedor);
+        });
       })
       .catch(() => null);
   };
@@ -637,45 +710,60 @@ const listVentasHandler = ($listVentas) => {
 
 // Routing table
 
-const routes = [
+type ModuleReturn<RParams extends Record<string, any> | void = void> = {
+  render: (r: RParams) => void;
+  close: () => void;
+};
+type Module<RParams extends Record<string, any> | void = void> = (
+  el: HTMLElement
+) => ModuleReturn<RParams>;
+
+type Route<RParams extends Record<string, any> | void = void> = {
+  path: string;
+  module: ModuleReturn<RParams>;
+  heading?: string;
+  $_rx?: RegExp;
+};
+
+const routes: Array<Route | Route<{ id: ID }> | Route<{ idVendedor: ID }>> = [
   {
     path: '/',
-    module: showAndHideHandler(D.getElementById('welcome')),
+    module: showAndHideHandler(getById('welcome')),
     heading: 'Welcome',
   },
   {
     path: '/login',
-    module: loginHandler(D.getElementById('login')),
+    module: loginHandler(getById('login')),
     heading: 'Login',
   },
   {
     path: '/vendedores',
-    module: listVendedoresHandler(D.getElementById('listVendedores')),
+    module: listVendedoresHandler(getById('listVendedores')),
     heading: 'Vendedores',
   },
   {
     path: '/vendedor/edit/:id',
-    module: editVendedorHandler(D.getElementById('editVendedor')),
+    module: editVendedorHandler(getById('editVendedor')),
     heading: 'Modificar vendedor',
   },
   {
     path: '/vendedor/new',
-    module: editVendedorHandler(D.getElementById('editVendedor')),
+    module: editVendedorHandler(getById('editVendedor')),
     heading: 'Agregar vendedor',
   },
   {
     path: '/vendedor/:id',
-    module: showVendedorHandler(D.getElementById('showVendedor')),
+    module: showVendedorHandler(getById('showVendedor')),
     heading: 'Vendedor',
   },
   {
     path: '/ventas',
-    module: listVentasHandler(D.getElementById('listVentas')),
+    module: listVentasHandler(getById('listVentas')),
     heading: 'Ventas',
   },
   {
     path: '*',
-    module: showAndHideHandler(D.getElementById('notFound')),
+    module: showAndHideHandler(getById('notFound')),
     heading: 'No existe',
   },
 ];
@@ -697,7 +785,7 @@ routes.forEach((r) => {
 let currentModule = null;
 let currentPath = '';
 
-function matchPath(refresh) {
+function matchPath(refresh?: boolean) {
   error.close(); // Just in case there is any open
   const path = location.pathname;
   const fullPath = path + location.search;
@@ -711,7 +799,7 @@ function matchPath(refresh) {
           ...(path.match(r.$_rx)?.groups || {}),
           ...Object.fromEntries(new URLSearchParams(location.search)),
         });
-        D.getElementsByTagName('h1')[0].textContent = r.heading;
+        getFirstByTag(document, 'h1').textContent = r.heading;
         return true;
       }
     });
@@ -722,11 +810,11 @@ function matchPath(refresh) {
 // So far, nothing is visible
 
 // The navBar
-const navBar = navBarHandler(D.getElementById('navbar'));
+const navBar = navBarHandler(getById('navbar'));
 
 // routing
 matchPath();
 
-window.onpopstate = () => {
+W.onpopstate = () => {
   matchPath();
 };
