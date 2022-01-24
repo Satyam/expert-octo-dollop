@@ -3,7 +3,8 @@ import type { ID, User, Vendedor, Venta } from './types';
 const W = window;
 
 // Helpers
-const getById = (id: string): HTMLElement => document.getElementById(id);
+const getById = <T extends HTMLElement>(id: string): T =>
+  document.getElementById(id) as T;
 const getFirstByClass = <T extends HTMLElement>(
   $: Element | Document,
   name: string
@@ -122,13 +123,19 @@ const handleAccordion = ($a: HTMLElement) => {
     }
   };
 
-  const panels = Array.from(getAllByTag($a, 'details')).reduce(($$ps, $p) => {
-    $p.addEventListener('toggle', toggleHandler);
-    return {
-      ...$$ps,
-      [$p.dataset.panel]: $p,
-    };
-  }, {});
+  const panels = getAllByTag<HTMLDetailsElement>($a, 'details').reduce(
+    ($$ps, $p) => {
+      $p.addEventListener('toggle', toggleHandler);
+      const panelName = $p.dataset.panel;
+      return panelName
+        ? {
+            ...$$ps,
+            [panelName]: $p,
+          }
+        : $$ps;
+    },
+    {}
+  );
 
   let currentOpen: string | undefined | null;
 
@@ -189,11 +196,12 @@ const navBarHandler = ($navbar: HTMLElement) => {
   const $collapse = getFirstByClass($navbar, 'navbar-collapse');
   const $brand = getFirstByClass($navbar, 'navbar-brand');
 
-  let $navItemActive = null;
+  let $navItemActive: HTMLElement | null = null;
 
   const menuHandler: EventListener = (ev) => {
     ev.preventDefault();
-    const path = getTarget<HTMLAnchorElement>(ev).pathname;
+    const $el = getTarget<HTMLAnchorElement>(ev);
+    const path = $el.pathname;
     if (path === location.pathname) return;
 
     $navItemActive?.classList.remove('active');
@@ -204,10 +212,11 @@ const navBarHandler = ($navbar: HTMLElement) => {
           op: 'logout',
         }).then(logout, logout);
       default:
-        const navItem = getTarget(ev).closest('.nav-item');
-        $navItemActive = navItem;
-        $navItemActive.classList.add('active');
-
+        const navItem = getClosest($el, '.nav-item');
+        if (navItem) {
+          $navItemActive = navItem;
+          $navItemActive.classList.add('active');
+        }
         $collapse.classList.remove('show');
         router.push(path);
         break;
@@ -256,7 +265,7 @@ const confirmarHandler = ($confirm: HTMLElement) => {
     $confirm.classList.remove('show');
     $confirm.style.display = 'none';
   };
-  const ask = (msg: string, header: string, danger?: boolean) =>
+  const ask = (msg: string, header?: string, danger?: boolean) =>
     new Promise((resolve) => {
       getFirstByClass($confirm, 'modal-body').textContent = msg;
       getFirstByClass($confirm, 'modal-title').textContent =
@@ -395,7 +404,7 @@ const listVendedoresHandler: Module = ($listVendedores) => {
           break;
         case 'delete':
           confirmar
-            .ask('¿Quiere borrar este vendedor?', null, true)
+            .ask('¿Quiere borrar este vendedor?', undefined, true)
             .then((confirma) => {
               return (
                 confirma &&
@@ -595,7 +604,7 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
           break;
         case 'delete':
           confirmar
-            .ask('¿Quiere borrar esta venta?', null, true)
+            .ask('¿Quiere borrar esta venta?', undefined, true)
             .then((confirma) => {
               return (
                 confirma &&
