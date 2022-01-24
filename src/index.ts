@@ -108,7 +108,6 @@ const apiService = <
     .catch((err) => {
       loading.close();
       error.render(err);
-      return Promise.reject();
     });
 };
 
@@ -308,16 +307,14 @@ const isLoggedIn = () =>
 const checkLoggedIn = () =>
   apiService<{}, User>('auth', {
     op: 'isLoggedIn',
-  })
-    .then((user) => {
-      if (user) {
-        setUser(user);
-        setTimeout(checkLoggedIn, 1_800_000);
-      } else {
-        if (isLoggedIn()) logout();
-      }
-    })
-    .catch(() => null);
+  }).then((user) => {
+    if (user) {
+      setUser(user);
+      setTimeout(checkLoggedIn, 1_800_000);
+    } else {
+      if (isLoggedIn()) logout();
+    }
+  });
 
 checkLoggedIn();
 
@@ -338,13 +335,11 @@ const loginHandler: Module = ($login) => {
       apiService<Partial<User>>('auth', {
         op: 'login',
         data,
-      })
-        .then((user) => {
-          setUser(user);
-          setTimeout(checkLoggedIn, 1_800_000);
-          router.replace('/');
-        })
-        .catch(() => null);
+      }).then((user) => {
+        setUser(user);
+        setTimeout(checkLoggedIn, 1_800_000);
+        router.replace('/');
+      });
     }
   };
 
@@ -407,7 +402,7 @@ const listVendedoresHandler: Module = ($listVendedores) => {
                 apiService('vendedores', {
                   op: 'remove',
                   id,
-                }).catch(() => null)
+                })
               );
             })
             .then((result) => {
@@ -430,25 +425,23 @@ const listVendedoresHandler: Module = ($listVendedores) => {
     show($listVendedores);
     apiService<{}, Vendedor[]>('vendedores', {
       op: 'list',
-    })
-      .then((vendedores) => {
-        const $$tr = getAllByTag($tbodyVendedores, 'tr');
-        $$tr.forEach(($row, index) => {
-          if (index >= vendedores.length) {
-            $row.classList.add('hidden');
-          } else {
-            $row.classList.remove('hidden');
-            fillRow($row, vendedores[index]);
-          }
-        });
+    }).then((vendedores) => {
+      const $$tr = getAllByTag($tbodyVendedores, 'tr');
+      $$tr.forEach(($row, index) => {
+        if (index >= vendedores.length) {
+          $row.classList.add('hidden');
+        } else {
+          $row.classList.remove('hidden');
+          fillRow($row, vendedores[index]);
+        }
+      });
 
-        vendedores.slice($$tr.length).forEach((v) => {
-          const $row = cloneTemplate<HTMLTableRowElement>($tplVendedores);
-          fillRow($row, v);
-          $tbodyVendedores.append($row);
-        });
-      })
-      .catch(() => null);
+      vendedores.slice($$tr.length).forEach((v) => {
+        const $row = cloneTemplate<HTMLTableRowElement>($tplVendedores);
+        fillRow($row, v);
+        $tbodyVendedores.append($row);
+      });
+    });
   };
   return {
     render,
@@ -479,17 +472,15 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
     apiService<{}, Vendedor>('vendedores', {
       op: 'get',
       id,
-    })
-      .then((v) => {
-        if (v) {
-          getFirstByClass<HTMLInputElement>($showVendedor, 'nombre').value =
-            v.nombre;
-          getFirstByClass<HTMLInputElement>($showVendedor, 'email').value =
-            v.email;
-          show($showVendedor);
-        }
-      })
-      .catch(() => null);
+    }).then((v) => {
+      if (v) {
+        getFirstByClass<HTMLInputElement>($showVendedor, 'nombre').value =
+          v.nombre;
+        getFirstByClass<HTMLInputElement>($showVendedor, 'email').value =
+          v.email;
+        show($showVendedor);
+      }
+    });
   };
 
   return {
@@ -529,17 +520,15 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
         op: isNew ? 'create' : 'update',
         id: data.id,
         data,
-      })
-        .then((data) => {
-          if (data) {
-            if (isNew) {
-              router.replace(`/vendedor/edit/${data.id}`);
-            } else {
-              setFields(data);
-            }
+      }).then((data) => {
+        if (data) {
+          if (isNew) {
+            router.replace(`/vendedor/edit/${data.id}`);
+          } else {
+            setFields(data);
           }
-        })
-        .catch(() => null);
+        }
+      });
     }
   };
 
@@ -562,13 +551,11 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
       apiService<{}, Partial<Vendedor>>('vendedores', {
         op: 'get',
         id,
-      })
-        .then((v) => {
-          getFirstByClass($form, 'btn').textContent = 'Modificar';
-          setFields(v);
-          show($editVendedor);
-        })
-        .catch(() => null);
+      }).then((v) => {
+        getFirstByClass($form, 'btn').textContent = 'Modificar';
+        setFields(v);
+        show($editVendedor);
+      });
     } else {
       getFirstByClass($form, 'btn').textContent = 'Agregar';
       $form.reset();
@@ -615,7 +602,7 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
                 apiService('ventas', {
                   op: 'remove',
                   id,
-                }).catch(() => null)
+                })
               );
             })
             .then((result) => {
@@ -661,28 +648,26 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
     apiService<{}, Venta[]>('ventas', {
       op: 'list',
       options,
-    })
-      .then((ventas) => {
-        const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVentas, 'tr');
-        $$tr.forEach(($row, index) => {
-          if (index >= ventas.length) {
-            $row.classList.add('hidden');
-          } else {
-            $row.classList.remove('hidden');
-            fillRow($row, ventas[index]);
-          }
-        });
+    }).then((ventas) => {
+      const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVentas, 'tr');
+      $$tr.forEach(($row, index) => {
+        if (index >= ventas.length) {
+          $row.classList.add('hidden');
+        } else {
+          $row.classList.remove('hidden');
+          fillRow($row, ventas[index]);
+        }
+      });
 
-        ventas.slice($$tr.length).forEach((v) => {
-          const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
-          fillRow($row, v);
-          $tbodyVentas.append($row);
-        });
-        getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
-          $el.classList.toggle('hidden', !!options.idVendedor);
-        });
-      })
-      .catch(() => null);
+      ventas.slice($$tr.length).forEach((v) => {
+        const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
+        fillRow($row, v);
+        $tbodyVentas.append($row);
+      });
+      getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
+        $el.classList.toggle('hidden', !!options.idVendedor);
+      });
+    });
   };
   return {
     render,
