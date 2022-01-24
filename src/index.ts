@@ -293,7 +293,7 @@ const confirmarHandler = ($confirm: HTMLElement) => {
 };
 const confirmar = confirmarHandler(getById('confirm'));
 
-const setUser = (user) => {
+const setUser = (user: Partial<User>) => {
   if (user) {
     const $container = getById('container');
     $container.classList.replace('not-logged-in', 'is-logged-in');
@@ -301,19 +301,23 @@ const setUser = (user) => {
     getFirstByClass($navbar, 'user-name').textContent = user.nombre;
   }
 };
+
+const isLoggedIn = () =>
+  getById('container').classList.contains('is-logged-in');
+
 const checkLoggedIn = () =>
   apiService<{}, User>('auth', {
     op: 'isLoggedIn',
   })
     .then((user) => {
-      setUser(user);
+      if (user) {
+        setUser(user);
+        setTimeout(checkLoggedIn, 1_800_000);
+      } else {
+        if (isLoggedIn()) logout();
+      }
     })
-    .then(() => {
-      setTimeout(checkLoggedIn, 1_800_000);
-    })
-    .catch((err) => {
-      console.error('checkLoggedIn', err);
-    });
+    .catch(() => null);
 
 checkLoggedIn();
 
@@ -335,8 +339,9 @@ const loginHandler: Module = ($login) => {
         op: 'login',
         data,
       })
-        .then(setUser)
-        .then(() => {
+        .then((user) => {
+          setUser(user);
+          setTimeout(checkLoggedIn, 1_800_000);
           router.replace('/');
         })
         .catch(() => null);

@@ -64,8 +64,7 @@ export default {
       })
       .catch((error) => {
         return {
-          error,
-          data: 'Unauthorized',
+          data: null,
         };
       }),
 };
