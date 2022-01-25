@@ -239,7 +239,7 @@ const navBarHandler = ($navbar: HTMLElement) => {
 };
 
 // Generic for components that just need showing and hiding
-const showAndHideHandler: Module = ($el: HTMLElement) => {
+const showAndHideHandler: Module<void> = ($el: HTMLElement) => {
   return {
     render: () => show($el),
     close: () => hide($el),
@@ -302,7 +302,7 @@ const confirmarHandler = ($confirm: HTMLElement) => {
 const confirmar = confirmarHandler(getById('confirm'));
 
 const setUser = (user: Partial<User>) => {
-  if (user) {
+  if (user && user.nombre) {
     const $container = getById('container');
     $container.classList.replace('not-logged-in', 'is-logged-in');
     const $navbar = getById('navbar');
@@ -327,7 +327,7 @@ const checkLoggedIn = () =>
 
 checkLoggedIn();
 
-const loginHandler: Module = ($login) => {
+const loginHandler: Module<void> = ($login) => {
   const $form = getFirstByTag<HTMLFormElement>($login, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($login, 'button');
 
@@ -378,7 +378,7 @@ const loginHandler: Module = ($login) => {
 
 // Now app-related handlers
 
-const listVendedoresHandler: Module = ($listVendedores) => {
+const listVendedoresHandler: Module<void> = ($listVendedores) => {
   const $tableVendedores = getById('tableVendedores');
   const $tbodyVendedores = getFirstByTag<HTMLTableSectionElement>(
     $tableVendedores,
@@ -482,7 +482,7 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
       op: 'get',
       id,
     }).then((v) => {
-      if (v) {
+      if (v && v.nombre && v.email) {
         getFirstByClass<HTMLInputElement>($showVendedor, 'nombre').value =
           v.nombre;
         getFirstByClass<HTMLInputElement>($showVendedor, 'email').value =
@@ -688,22 +688,22 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
 
 // Routing table
 
-type ModuleReturn<RParams extends Record<string, any> | void = void> = {
+type ModuleReturn<RParams extends unknown> = {
   render: (r: RParams) => void;
   close: () => void;
 };
-type Module<RParams extends Record<string, any> | void = void> = (
+type Module<RParams extends unknown> = (
   el: HTMLElement
 ) => ModuleReturn<RParams>;
 
-type Route<RParams extends Record<string, any> | void = void> = {
+type Route<RParams extends unknown> = {
   path: string;
   module: ModuleReturn<RParams>;
   heading?: string;
   $_rx?: RegExp;
 };
 
-const routes: Array<Route | Route<{ id: ID }> | Route<{ idVendedor: ID }>> = [
+const routes: Array<Route<any>> = [
   {
     path: '/',
     module: showAndHideHandler(getById('welcome')),
@@ -760,7 +760,7 @@ routes.forEach((r) => {
   );
 });
 
-let currentModule = null;
+let currentModule: ModuleReturn<any> | null = null;
 let currentPath = '';
 
 function matchPath(refresh?: boolean) {
@@ -770,14 +770,14 @@ function matchPath(refresh?: boolean) {
   if (refresh || fullPath !== currentPath) {
     currentPath = fullPath;
     routes.some((r) => {
-      if (r.$_rx.test(path)) {
+      if (r.$_rx && r.$_rx.test(path)) {
         currentModule?.close();
         currentModule = r.module;
         currentModule.render({
           ...(path.match(r.$_rx)?.groups || {}),
           ...Object.fromEntries(new URLSearchParams(location.search)),
         });
-        getFirstByTag(document, 'h1').textContent = r.heading;
+        if (r.heading) getFirstByTag(document, 'h1').textContent = r.heading;
         return true;
       }
     });
