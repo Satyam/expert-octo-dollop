@@ -127,6 +127,12 @@ const fillRow = <D extends Record<string, any>>(
   });
 };
 
+const setFields = ($form: HTMLFormElement, v: Record<string, any>) => {
+  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
+    $input.dataset.value = $input.value = v[$input.name] || '';
+  });
+};
+
 const handleAccordion = ($a: HTMLElement) => {
   const toggleHandler = (ev: Event) => {
     const $d = getTarget<HTMLDetailsElement>(ev);
@@ -471,6 +477,7 @@ const listVendedoresHandler: Module<void> = ($listVendedores) => {
 };
 
 const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
+  // `listVentas` is not a template but a plain node, don't use `cloneTemplate` on it.
   const $panelVentas = <HTMLElement>getById('listVentas').cloneNode(true);
   const $accordion = getFirstByClass($showVendedor, 'accordion');
   const { closeAllPanels } = handleAccordion($accordion);
@@ -487,16 +494,13 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
           break;
       }
     }) as EventListener);
-    $accordion.addEventListener('close', console.log);
+
     apiService<{}, Vendedor>('vendedores', {
       op: 'get',
       id,
     }).then((v) => {
-      if (v && v.nombre && v.email) {
-        getFirstByClass<HTMLInputElement>($showVendedor, 'nombre').value =
-          v.nombre;
-        getFirstByClass<HTMLInputElement>($showVendedor, 'email').value =
-          v.email;
+      if (v) {
+        setFields(getFirstByTag($showVendedor, 'form'), v);
         show($showVendedor);
       }
     });
@@ -514,12 +518,6 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
 const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
   const $form = getFirstByTag<HTMLFormElement>($editVendedor, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($editVendedor, 'button');
-
-  const setFields = (v: Partial<Vendedor>) => {
-    getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
-      $input.dataset.value = $input.value = v ? v[$input.name] : '';
-    });
-  };
 
   $form.onsubmit = (ev) => {
     ev.preventDefault();
@@ -544,7 +542,7 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
           if (isNew) {
             router.replace(`/vendedor/edit/${data.id}`);
           } else {
-            setFields(data);
+            setFields($form, data);
           }
         }
       });
@@ -572,7 +570,7 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
         id,
       }).then((v) => {
         getFirstByClass($form, 'btn').textContent = 'Modificar';
-        setFields(v);
+        setFields($form, v);
         show($editVendedor);
       });
     } else {
