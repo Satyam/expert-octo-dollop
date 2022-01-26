@@ -139,9 +139,9 @@
         <template id="tplVendedores">
           <tr>
             <td title="Ver detalles" data-action="show" class="action">
-              <a href="#" class="nombre"></a>
+              <a href="#" class="field" data-field="nombre"></a>
             </td>
-            <td class="email"></td>
+            <td class="field" data-field="email"></td>
             <td class="text-center">
               <div class="btn-group btn-group-sm">
                 <button
@@ -267,20 +267,23 @@
               data-action="show"
               title="Ver detalle esta venta"
             >
-              <a href="#" class="fecha"></a>
+              <a href="#" class="field" data-field="fecha"></a>
             </td>
-            <td class="concepto"></td>
+            <td class="field" data-field="concepto"></td>
             <td
               title="Ver detalle del vendedor"
-              class="action idVendedor"
+              class="action field"
+              data-field="idVendedor"
               data-action="showVendedor"
             >
-              <a href="#" class="vendedor"></a>
+              <a href="#" class="field" data-field="vendedor"></a>
             </td>
-            <td class="text-end cantidad"></td>
-            <td class="text-end precioUnitario"></td>
-            <td class="text-center"><i class="bi iva"></i></td>
-            <td class="text-end precioTotal"></td>
+            <td class="text-end field" data-field="cantidad"></td>
+            <td class="text-end field" data-field="precioUnitario"></td>
+            <td class="text-center">
+              <i class="bi field" data-field="iva"></i>
+            </td>
+            <td class="text-end field" data-field="precioTotal"></td>
             <td class="text-center">
               <div class="btn-group btn-group-sm">
                 <button

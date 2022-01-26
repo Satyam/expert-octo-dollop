@@ -1,5 +1,5 @@
 import type { ID, User, Vendedor, Venta } from './types';
-
+type VentaYVendedor = Venta & { vendedor?: string };
 const W = window;
 
 // Helpers
@@ -112,14 +112,31 @@ const apiService = <
     });
 };
 
+const fillRow = <D extends Record<string, any>>(
+  $row: HTMLTableRowElement,
+  data: D,
+  fn?: (fieldName: string, $el: HTMLElement, v: D) => boolean
+) => {
+  $row.dataset.id = String(data.id);
+  getAllByClass($row, 'field').forEach(($el) => {
+    const field = $el.dataset.field;
+    if (field) {
+      if (fn) if (fn(field, $el, data)) return;
+      $el.textContent = data[field] || '';
+    }
+  });
+};
+
 const handleAccordion = ($a: HTMLElement) => {
   const toggleHandler = (ev: Event) => {
     const $d = getTarget<HTMLDetailsElement>(ev);
     const panelName = $d.dataset.panel;
-    if ($d.open) {
-      openPanel(panelName);
-    } else {
-      closePanel(panelName);
+    if (panelName) {
+      if ($d.open) {
+        openPanel(panelName);
+      } else {
+        closePanel(panelName);
+      }
     }
   };
 
@@ -139,7 +156,7 @@ const handleAccordion = ($a: HTMLElement) => {
 
   let currentOpen: string | undefined | null;
 
-  const closePanel = (panelName) => {
+  const closePanel = (panelName: string) => {
     const $panel = panels[panelName];
     if (!$panel) return;
     if (panelName === currentOpen) {
@@ -154,7 +171,7 @@ const handleAccordion = ($a: HTMLElement) => {
     }
   };
 
-  const openPanel = (panelName) => {
+  const openPanel = (panelName: string) => {
     const $panel = panels[panelName];
     if (!$panel) return;
     if (currentOpen) closePanel(currentOpen);
@@ -168,7 +185,7 @@ const handleAccordion = ($a: HTMLElement) => {
     );
   };
 
-  const togglePanel = (panelName) => {
+  const togglePanel = (panelName: string) => {
     if (panelName === currentOpen) {
       closePanel(panelName);
     } else {
@@ -176,7 +193,7 @@ const handleAccordion = ($a: HTMLElement) => {
     }
   };
 
-  const closeAllPanels = () => closePanel(currentOpen);
+  const closeAllPanels = () => closePanel(currentOpen || '');
 
   return {
     openPanel,
@@ -239,7 +256,7 @@ const navBarHandler = ($navbar: HTMLElement) => {
 };
 
 // Generic for components that just need showing and hiding
-const showAndHideHandler: Module<void> = ($el: HTMLElement) => {
+const showAndHideHandler: Module<void> = ($el) => {
   return {
     render: () => show($el),
     close: () => hide($el),
@@ -248,9 +265,9 @@ const showAndHideHandler: Module<void> = ($el: HTMLElement) => {
 
 const loading = showAndHideHandler(getById('loading'));
 
-const errorHandler = ($error: HTMLElement) => {
+const errorHandler: Module<string> = ($error) => {
   return {
-    render: (msg: string) => {
+    render: (msg) => {
       getFirstByClass($error, 'msg').textContent = msg;
       show($error);
     },
@@ -424,18 +441,13 @@ const listVendedoresHandler: Module<void> = ($listVendedores) => {
     }
   };
 
-  const fillRow = ($row, v) => {
-    $row.dataset.id = v.id;
-    getFirstByClass($row, 'nombre').textContent = v.nombre;
-    getFirstByClass($row, 'email').textContent = v.email;
-  };
   const render = () => {
     setTitle('Vendedores');
     show($listVendedores);
     apiService<{}, Vendedor[]>('vendedores', {
       op: 'list',
     }).then((vendedores) => {
-      const $$tr = getAllByTag($tbodyVendedores, 'tr');
+      const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVendedores, 'tr');
       $$tr.forEach(($row, index) => {
         if (index >= vendedores.length) {
           $row.classList.add('hidden');
@@ -466,9 +478,7 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
   const render = ({ id }) => {
     $accordion.addEventListener('openPanel', ((ev: CustomEvent) => {
       const $panelBody = getTarget(ev);
-      const panelName = ev.detail;
-      // const { detail: panelName, target: $panelBody } = ev;
-      switch (panelName) {
+      switch (ev.detail) {
         case 'ventas':
           if ($panelBody.children.length === 0) $panelBody.append($panelVentas);
           listVentasHandler($panelVentas).render({ idVendedor: id });
@@ -505,7 +515,7 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
   const $form = getFirstByTag<HTMLFormElement>($editVendedor, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($editVendedor, 'button');
 
-  const setFields = (v) => {
+  const setFields = (v: Partial<Vendedor>) => {
     getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
       $input.dataset.value = $input.value = v ? v[$input.name] : '';
     });
@@ -628,33 +638,42 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
     }
   };
 
-  const fillRow = ($row, v) => {
-    $row.dataset.id = v.id;
-    getFirstByClass<HTMLTableCellElement>($row, 'fecha').textContent =
-      formatDate(new Date(v.fecha));
-    getFirstByClass<HTMLTableCellElement>($row, 'concepto').textContent =
-      v.concepto;
-    getFirstByClass<HTMLTableCellElement>($row, 'vendedor').textContent =
-      v.vendedor;
-    getFirstByClass<HTMLTableCellElement>(
+  const fr = ($row: HTMLTableRowElement, v: Venta) =>
+    fillRow<
+      Omit<Venta, 'precioUnitario' | 'fecha'> & {
+        precioTotal: string;
+        precioUnitario: string;
+        fecha: string;
+      }
+    >(
       $row,
-      'idVendedor'
-    ).dataset.idVendedor = v.idVendedor;
-    getFirstByClass<HTMLTableCellElement>($row, 'cantidad').textContent =
-      v.cantidad;
-    getFirstByClass<HTMLTableCellElement>($row, 'precioUnitario').textContent =
-      formatCurrency(v.precioUnitario);
-    getFirstByClass<HTMLTableCellElement>($row, 'iva').classList.add(
-      v.iva ? 'bi-check-square' : 'bi-square'
+      {
+        ...v,
+        precioTotal: formatCurrency(
+          (v.cantidad || 0) * (v.precioUnitario || 0)
+        ),
+        precioUnitario: formatCurrency(v.precioUnitario || 0),
+        fecha: formatDate(new Date(v.fecha)),
+      },
+      (name, $el, venta) => {
+        switch (name) {
+          case 'idVendedor':
+            $el.dataset.idVendedor = String(venta.idVendedor);
+            return true;
+          case 'iva':
+            $el.classList.add(venta.iva ? 'bi-check-square' : 'bi-square');
+            return true;
+          default:
+            return false;
+        }
+      }
     );
-    getFirstByClass<HTMLTableCellElement>($row, 'precioTotal').textContent =
-      formatCurrency(v.cantidad * v.precioUnitario);
-  };
-  const render = (options) => {
+
+  const render = (options: { idVendedor?: ID } = {}) => {
     setTitle('Ventas');
     show($listVentas);
 
-    apiService<{}, Venta[]>('ventas', {
+    apiService<{}, VentaYVendedor[]>('ventas', {
       op: 'list',
       options,
     }).then((ventas) => {
@@ -664,13 +683,13 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
           $row.classList.add('hidden');
         } else {
           $row.classList.remove('hidden');
-          fillRow($row, ventas[index]);
+          fr($row, ventas[index]);
         }
       });
 
       ventas.slice($$tr.length).forEach((v) => {
         const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
-        fillRow($row, v);
+        fr($row, v);
         $tbodyVentas.append($row);
       });
       getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
