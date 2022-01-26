@@ -7,7 +7,7 @@
       "dynamicImport": false
     },
     "minify": {
-      "mangle": true
+      "mangle": false
     }
   },
   "minify": false
