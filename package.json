@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon .",
-    "build": "swc ./src/index.ts -w -o ./public/index.js"
+    "build": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -32,8 +32,7 @@
     "sqlite3": "^4.2.0"
   },
   "devDependencies": {
-    "@swc/cli": "^0.1.55",
-    "@swc/core": "^1.2.131",
-    "chokidar": "^3.5.3"
+    "@rollup/plugin-typescript": "^8.3.0",
+    "rollup": "^2.66.1"
   }
 }
