@@ -7,5 +7,5 @@ export default {
     format: 'es',
     sourceMap: true,
   },
-  plugins: [typescript({ lib: ['es2021', 'dom'] })],
+  plugins: [typescript({ lib: ['es2021', 'dom', 'dom.iterable'] })],
 };
