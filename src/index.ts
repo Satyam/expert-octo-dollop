@@ -127,12 +127,41 @@ const fillRow = <D extends Record<string, any>>(
   });
 };
 
-const setFields = ($form: HTMLFormElement, v: Record<string, any>) => {
+const setForm = ($form: HTMLFormElement, v: Record<string, any>) => {
   getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
     $input.dataset.value = $input.value = v[$input.name] || '';
   });
 };
 
+const readForm = <D extends Record<string, any>>(
+  $form: HTMLFormElement
+): D | undefined => {
+  $form.classList.add('was-validated');
+  if ($form.checkValidity()) {
+    return getAllByTag<HTMLInputElement>($form, 'input').reduce(
+      (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
+      {} as D
+    );
+  }
+  return undefined;
+};
+
+const watchFormChanges = (
+  $form: HTMLFormElement,
+  $submit: HTMLButtonElement
+) => {
+  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
+    $input.oninput = () => {
+      $submit.disabled = true;
+      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
+        if ($i.value !== $i.dataset.value) {
+          $submit.disabled = false;
+          return true;
+        }
+      });
+    };
+  });
+};
 const handleAccordion = ($a: HTMLElement) => {
   const toggleHandler = (ev: Event) => {
     const $d = getTarget<HTMLDetailsElement>(ev);
@@ -357,13 +386,8 @@ const loginHandler: Module<void> = ($login) => {
   $form.onsubmit = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    if ($form.checkValidity()) {
-      $form.classList.add('was-validated');
-      const data = getAllByTag<HTMLInputElement>($form, 'input').reduce(
-        (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
-        {}
-      );
-
+    const data = readForm<Partial<User>>($form);
+    if (data) {
       apiService<Partial<User>>('auth', {
         op: 'login',
         data,
@@ -375,18 +399,7 @@ const loginHandler: Module<void> = ($login) => {
     }
   };
 
-  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
-    $input.onkeydown = () => {
-      $form.classList.remove('was-validated');
-      $submit.disabled = true;
-      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
-        if ($i.value !== $i.dataset.value) {
-          $submit.disabled = false;
-          return true;
-        }
-      });
-    };
-  });
+  watchFormChanges($form, $submit);
 
   const render = () => {
     $form.classList.remove('was-validated');
@@ -500,7 +513,7 @@ const showVendedorHandler: Module<{ id: ID }> = ($showVendedor) => {
       id,
     }).then((v) => {
       if (v) {
-        setFields(getFirstByTag($showVendedor, 'form'), v);
+        setForm(getFirstByTag($showVendedor, 'form'), v);
         show($showVendedor);
       }
     });
@@ -522,15 +535,8 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
   $form.onsubmit = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    if ($form.checkValidity()) {
-      $form.classList.add('was-validated');
-      const data = <Partial<Vendedor>>(
-        getAllByTag<HTMLInputElement>($form, 'input').reduce(
-          (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
-          {}
-        )
-      );
-
+    const data = readForm<Partial<Vendedor>>($form);
+    if (data) {
       const isNew = !data.id;
 
       apiService<Partial<Vendedor>>('vendedores', {
@@ -542,25 +548,13 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
           if (isNew) {
             router.replace(`/vendedor/edit/${data.id}`);
           } else {
-            setFields($form, data);
+            setForm($form, data);
           }
         }
       });
     }
   };
-
-  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
-    $input.onkeydown = (ev) => {
-      $form.classList.remove('was-validated');
-      $submit.disabled = true;
-      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
-        if ($i.value !== $i.dataset.value) {
-          $submit.disabled = false;
-          return true;
-        }
-      });
-    };
-  });
+  watchFormChanges($form, $submit);
 
   const render = ({ id }) => {
     $form.classList.remove('was-validated');
@@ -570,7 +564,7 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
         id,
       }).then((v) => {
         getFirstByClass($form, 'btn').textContent = 'Modificar';
-        setFields($form, v);
+        setForm($form, v);
         show($editVendedor);
       });
     } else {
