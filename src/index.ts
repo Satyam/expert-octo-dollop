@@ -397,10 +397,8 @@ const listVendedoresHandler: Module<void> = ($listVendedores) => {
                 })
               );
             })
-            .then((result) => {
-              if (result !== false) {
-                router.replace(`/vendedores`, true);
-              }
+            .then(() => {
+              router.replace(`/vendedores`, true);
             });
           break;
       }
@@ -563,10 +561,8 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
                 })
               );
             })
-            .then((result) => {
-              if (result !== false) {
-                router.replace(`/ventas`, true);
-              }
+            .then(() => {
+              router.replace(`/ventas`, true);
             });
           break;
         case 'showVendedor':
