@@ -1,37 +1,19 @@
 import type { ID, User, Vendedor, Venta } from './types';
+import {
+  getById,
+  getFirstByTag,
+  getAllByTag,
+  getFirstByClass,
+  getAllByClass,
+  getTarget,
+  getClosest,
+  cloneTemplate,
+} from './gets';
+import { setForm, readForm, watchFormChanges } from './form';
 type VentaYVendedor = Venta & { vendedor?: string };
 const W = window;
 
 // Helpers
-const getById = <T extends HTMLElement>(id: string): T =>
-  document.getElementById(id) as T;
-const getFirstByClass = <T extends HTMLElement>(
-  $: Element | Document,
-  name: string
-): T => $.getElementsByClassName(name)[0] as T;
-
-const getAllByClass = <T extends HTMLElement>(
-  $: Element | Document,
-  name: string
-): Array<T> => Array.from($.getElementsByClassName(name)) as T[];
-
-const getFirstByTag = <T extends HTMLElement>(
-  $: Element | Document,
-  name: string
-): T => $.getElementsByTagName(name)[0] as T;
-
-const getAllByTag = <T extends HTMLElement>(
-  $: Element | Document,
-  name: string
-): Array<T> => Array.from($.getElementsByTagName(name)) as T[];
-
-const getClosest = <T extends HTMLElement>($: Element, selector: string): T =>
-  $.closest(selector) as T;
-
-const getTarget = <T extends HTMLElement>(ev: Event): T => ev.target as T;
-
-const cloneTemplate = <T extends HTMLElement>($tpl: HTMLTemplateElement) =>
-  ($tpl.content.cloneNode(true) as HTMLElement).firstElementChild as T;
 
 const setTitle = (title?: string) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
@@ -127,41 +109,6 @@ const fillRow = <D extends Record<string, any>>(
   });
 };
 
-const setForm = ($form: HTMLFormElement, v: Record<string, any>) => {
-  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
-    $input.dataset.value = $input.value = v[$input.name] || '';
-  });
-};
-
-const readForm = <D extends Record<string, any>>(
-  $form: HTMLFormElement
-): D | undefined => {
-  $form.classList.add('was-validated');
-  if ($form.checkValidity()) {
-    return getAllByTag<HTMLInputElement>($form, 'input').reduce(
-      (prev, el) => (el.name ? { ...prev, [el.name]: el.value } : prev),
-      {} as D
-    );
-  }
-  return undefined;
-};
-
-const watchFormChanges = (
-  $form: HTMLFormElement,
-  $submit: HTMLButtonElement
-) => {
-  getAllByTag<HTMLInputElement>($form, 'input').forEach(($input) => {
-    $input.oninput = () => {
-      $submit.disabled = true;
-      getAllByTag<HTMLInputElement>($form, 'input').some(($i) => {
-        if ($i.value !== $i.dataset.value) {
-          $submit.disabled = false;
-          return true;
-        }
-      });
-    };
-  });
-};
 const handleAccordion = ($a: HTMLElement) => {
   const toggleHandler = (ev: Event) => {
     const $d = getTarget<HTMLDetailsElement>(ev);
