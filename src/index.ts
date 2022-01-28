@@ -642,17 +642,17 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
 
 // Routing table
 
-type ModuleReturn<RParams extends unknown> = {
-  render: (r: RParams) => void;
+type ModuleReturn<RParams extends unknown, SearchOpts extends any = {}> = {
+  render: (r: RParams, s?: SearchOpts) => void;
   close: () => void;
 };
-type Module<RParams extends unknown> = (
+type Module<RParams extends unknown, SearchOpts extends any = {}> = (
   el: HTMLElement
-) => ModuleReturn<RParams>;
+) => ModuleReturn<RParams, SearchOpts>;
 
-type Route<RParams extends unknown> = {
+type Route<RParams extends unknown, SearchOpts extends any = {}> = {
   path: string;
-  module: ModuleReturn<RParams>;
+  module: ModuleReturn<RParams, SearchOpts>;
   heading?: string;
   $_rx?: RegExp;
 };
@@ -727,10 +727,10 @@ function matchPath(refresh?: boolean) {
       if (r.$_rx && r.$_rx.test(path)) {
         currentModule?.close();
         currentModule = r.module;
-        currentModule.render({
-          ...(path.match(r.$_rx)?.groups || {}),
-          ...Object.fromEntries(new URLSearchParams(location.search)),
-        });
+        currentModule.render(
+          path.match(r.$_rx)?.groups || {},
+          Object.fromEntries(new URLSearchParams(location.search))
+        );
         if (r.heading) getFirstByTag(document, 'h1').textContent = r.heading;
         return true;
       }
