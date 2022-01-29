@@ -9,7 +9,7 @@ import {
   getClosest,
   cloneTemplate,
 } from './gets';
-import { setForm, readForm, watchFormChanges } from './form';
+import { setForm, readForm, watchFormChanges, resetForm } from './form';
 type VentaYVendedor = Venta & { vendedor?: string };
 const W = window;
 
@@ -349,7 +349,7 @@ const loginHandler: Module<void> = ($login) => {
   watchFormChanges($form, $submit);
 
   const render = () => {
-    $form.classList.remove('was-validated');
+    resetForm($form);
     show($login);
   };
 
@@ -502,7 +502,7 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
   watchFormChanges($form, $submit);
 
   const render = ({ id }) => {
-    $form.classList.remove('was-validated');
+    resetForm($form);
     if (id) {
       apiService<{}, Partial<Vendedor>>('vendedores', {
         op: 'get',
@@ -514,7 +514,6 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
       });
     } else {
       getFirstByClass($form, 'btn').textContent = 'Agregar';
-      $form.reset();
       show($editVendedor);
     }
   };
