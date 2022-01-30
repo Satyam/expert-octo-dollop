@@ -1,7 +1,8 @@
-export type ID = string | number;
-export type Fila = Consignacion | Distribuidor | Salida | User | Venta;
+declare module '*.html';
+type ID = string | number;
+type Fila = Consignacion | Distribuidor | Salida | User | Venta;
 
-export type Consignacion = {
+type Consignacion = {
   id: ID;
   fecha: Date;
   idDistribuidor?: ID;
@@ -15,7 +16,7 @@ export type Consignacion = {
   comentarios?: string;
 };
 
-export type Distribuidor = {
+type Distribuidor = {
   id: ID;
   nombre: string;
   localidad?: string;
@@ -25,27 +26,27 @@ export type Distribuidor = {
   direccion?: string;
 };
 
-export type Salida = {
+type Salida = {
   id: ID;
   fecha: Date;
   concepto?: string;
   importe?: number;
 };
 
-export type User = {
+type User = {
   id: ID;
   nombre: string;
   email?: string;
   password?: string;
 };
 
-export type Vendedor = {
+type Vendedor = {
   id: ID;
   nombre: string;
   email?: string;
 };
 
-export type Venta = {
+type Venta = {
   id: ID;
   concepto?: string;
   fecha: Date;
