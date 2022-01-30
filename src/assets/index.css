@@ -1,0 +1,36 @@
+.navbar {
+  background-color: #e4ccaa !important;
+  color: #644240;
+}
+.navbar a {
+  color: #644240;
+}
+.navbar-brand {
+  margin: auto 1em;
+}
+.navbar-brand img {
+  width: 1em;
+  height: 1em;
+}
+
+.hidden {
+  display: none;
+}
+
+.card-header.is-open .bi::before {
+  /* bi-caret-up-fill */
+  content: '\f235';
+}
+
+.card-header .bi::before {
+  /* bi-caret-down-fill */
+  content: '\f229';
+}
+
+.is-logged-in .logged-out {
+  display: none;
+}
+
+.not-logged-in .logged-in {
+  display: none;
+}

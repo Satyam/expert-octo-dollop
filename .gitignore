@@ -106,5 +106,5 @@ dist
 # satyam
 db.sqlite.sql
 db.sqlite
-public/index.js
-public/index.js.map
+public/
+public/
