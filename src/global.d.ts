@@ -55,3 +55,18 @@ type Venta = {
   precioUnitario?: number;
   iva?: boolean;
 };
+
+type ModuleReturn<RParams extends unknown, SearchOpts extends any = {}> = {
+  render: (r: RParams, s?: SearchOpts) => void;
+  close: () => void;
+};
+type Module<RParams extends unknown, SearchOpts extends any = {}> = (
+  el: HTMLElement
+) => ModuleReturn<RParams, SearchOpts>;
+
+type Route<RParams extends unknown, SearchOpts extends any = {}> = {
+  path: string;
+  module: ModuleReturn<RParams, SearchOpts>;
+  heading?: string;
+  $_rx?: RegExp;
+};

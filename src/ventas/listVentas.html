@@ -1,0 +1,74 @@
+<div id="listVentas" class="hidden">
+  <template id="tplVentas">
+    <tr>
+      <td
+        class="text-center action"
+        data-action="show"
+        title="Ver detalle esta venta"
+      >
+        <a href="#" class="field" data-field="fecha"></a>
+      </td>
+      <td class="field" data-field="concepto"></td>
+      <td
+        title="Ver detalle del vendedor"
+        class="action field"
+        data-field="idVendedor"
+        data-action="showVendedor"
+      >
+        <a href="#" class="field" data-field="vendedor"></a>
+      </td>
+      <td class="text-end field" data-field="cantidad"></td>
+      <td class="text-end field" data-field="precioUnitario"></td>
+      <td class="text-center">
+        <i class="bi field" data-field="iva"></i>
+      </td>
+      <td class="text-end field" data-field="precioTotal"></td>
+      <td class="text-center">
+        <div class="btn-group btn-group-sm">
+          <button
+            class="btn btn-outline-secondary action"
+            data-action="edit"
+            title="Modificar"
+          >
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button
+            class="btn btn-outline-danger action"
+            data-action="delete"
+            title="Borrar"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  </template>
+
+  <table
+    id="tableVentas"
+    class="table table-striped table-hover table-bordered table-responsive table-sm"
+  >
+    <thead class="bg-secondary text-white border border-dark">
+      <tr>
+        <th>Fecha</th>
+        <th>Concepto</th>
+        <th class="idVendedor">Vendedor</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>IVA</th>
+        <th>Precio Total</th>
+        <th class="text-center">
+          <button
+            type="button"
+            class="btn btn-primary action"
+            data-action="add"
+            title="Agregar"
+          >
+            <i class="bi bi-cart-plus"></i>
+          </button>
+        </th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>

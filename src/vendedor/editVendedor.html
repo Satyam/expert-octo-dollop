@@ -1,0 +1,33 @@
+<div id="editVendedor" class="hidden">
+  <form novalidate>
+    <input type="hidden" name="id" />
+    <label class="form-group row">
+      <div class="col-sm-2 col-form-label">Nombre</div>
+      <div class="col-sm-10">
+        <input
+          name="nombre"
+          class="form-control"
+          placeholder="Nombre"
+          required
+        />
+        <div class="invalid-feedback">Debe indicar un nombre</div>
+      </div>
+    </label>
+    <label class="form-group row">
+      <div class="col-sm-2 col-form-label">Email</div>
+      <div class="col-sm-10">
+        <input
+          type="email"
+          name="email"
+          class="form-control"
+          placeholder="Email"
+          required
+        />
+        <div class="invalid-feedback">
+          Debe indicar una dirección de correo electrónico
+        </div>
+      </div>
+    </label>
+    <button type="submit" class="btn btn-primary" disabled>Agregar</button>
+  </form>
+</div>
