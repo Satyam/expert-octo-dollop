@@ -1,4 +1,5 @@
-import { loading, error } from './popups/popups';
+import { loading, error } from './popups';
+
 const apiService = <
   IN extends Record<string, any> = Record<string, any>,
   OUT extends Record<string, any> = IN,

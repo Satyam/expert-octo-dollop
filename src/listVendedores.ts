@@ -1,4 +1,17 @@
-const listVendedoresHandler: Module<void> = ($listVendedores) => {
+import {
+  getFirstByTag,
+  getById,
+  getTarget,
+  getClosest,
+  getAllByTag,
+  cloneTemplate,
+} from './gets';
+import apiService from './apiService';
+import { show, hide, fillRow, setTitle, router } from './utils';
+import { confirmar } from './popups';
+
+export const listVendedores: Handler<void> = ($el) => {
+  const $listVendedores = $el || getById('listVendedores');
   const $tableVendedores = getById('tableVendedores');
   const $tbodyVendedores = getFirstByTag<HTMLTableSectionElement>(
     $tableVendedores,
@@ -70,3 +83,5 @@ const listVendedoresHandler: Module<void> = ($listVendedores) => {
     close: () => hide($listVendedores),
   };
 };
+
+export default listVendedores;

@@ -56,17 +56,19 @@ type Venta = {
   iva?: boolean;
 };
 
-type ModuleReturn<RParams extends unknown, SearchOpts extends any = {}> = {
+type HandlerReturn<RParams extends unknown, SearchOpts extends any = {}> = {
   render: (r: RParams, s?: SearchOpts) => void;
   close: () => void;
 };
-type Module<RParams extends unknown, SearchOpts extends any = {}> = (
-  el: HTMLElement
-) => ModuleReturn<RParams, SearchOpts>;
+type Handler<RParams extends unknown, SearchOpts extends any = {}> = (
+  el?: HTMLElement
+) => HandlerReturn<RParams, SearchOpts>;
 
 type Route<RParams extends unknown, SearchOpts extends any = {}> = {
   path: string;
-  module: ModuleReturn<RParams, SearchOpts>;
+  module: HandlerReturn<RParams, SearchOpts>;
   heading?: string;
   $_rx?: RegExp;
 };
+
+type VentaYVendedor = Venta & { vendedor?: string };

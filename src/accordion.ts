@@ -76,3 +76,5 @@ export const handleAccordion = ($a: HTMLElement) => {
     getOpenPanel: () => currentOpen,
   };
 };
+
+export default handleAccordion;

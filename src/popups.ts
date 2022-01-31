@@ -1,14 +1,10 @@
-import { getFirstByClass, getClosest, getTarget, getById } from '../gets';
-import { show, hide } from '../utils';
-export { default as loadingHtml } from './loading.html';
-export { default as confirmaHtml } from './confirma.html';
-export { default as errorHtml } from './error.html';
-export { default as notFoundHtml } from './notFound.html';
+import { getFirstByClass, getClosest, getTarget, getById } from './gets';
+import { show, hide } from './utils';
 
-export const showAndHideHandler = ($el: HTMLElement) => {
+export const showAndHideHandler: Handler<void> = ($el) => {
   return {
-    render: () => show($el),
-    close: () => hide($el),
+    render: () => $el && show($el),
+    close: () => $el && hide($el),
   };
 };
 

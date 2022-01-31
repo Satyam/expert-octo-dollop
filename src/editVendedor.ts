@@ -1,4 +1,10 @@
-const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
+import { getFirstByTag, getFirstByClass, getById } from './gets';
+import { readForm, setForm, watchFormChanges, resetForm } from './form';
+import apiService from './apiService';
+import { show, hide, router } from './utils';
+
+export const editVendedor: Handler<{ id: ID }> = ($el) => {
+  const $editVendedor = $el || getById('editVendedor');
   const $form = getFirstByTag<HTMLFormElement>($editVendedor, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($editVendedor, 'button');
 
@@ -48,3 +54,5 @@ const editVendedorHandler: Module<{ id: ID }> = ($editVendedor) => {
     close: () => hide($editVendedor),
   };
 };
+
+export default editVendedor;

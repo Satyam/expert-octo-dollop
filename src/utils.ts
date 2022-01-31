@@ -1,4 +1,5 @@
 import { getAllByClass } from './gets';
+
 export const setTitle = (title?: string) =>
   (document.title = title ? `La Corazón - ${title}` : 'La Corazón');
 
@@ -40,4 +41,23 @@ export const fillRow = <D extends Record<string, any>>(
       $el.textContent = data[field] || '';
     }
   });
+};
+
+export const router = {
+  push: (path: string, refresh?: boolean) => {
+    history.pushState({ path }, '', path);
+    window.dispatchEvent(
+      new CustomEvent('router', {
+        detail: { path, refresh, method: 'push' },
+      })
+    );
+  },
+  replace: (path: string, refresh?: boolean) => {
+    history.replaceState({ path }, '', path);
+    window.dispatchEvent(
+      new CustomEvent('router', {
+        detail: { path, refresh, method: 'replace' },
+      })
+    );
+  },
 };

@@ -1,4 +1,26 @@
-const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
+import {
+  getFirstByTag,
+  getById,
+  getTarget,
+  getClosest,
+  getAllByTag,
+  cloneTemplate,
+  getAllByClass,
+} from './gets';
+import apiService from './apiService';
+import {
+  show,
+  hide,
+  fillRow,
+  setTitle,
+  formatCurrency,
+  formatDate,
+  router,
+} from './utils';
+import { confirmar } from './popups';
+
+export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
+  const $listVentas = $el || getById('listVentas');
   const $tableVentas = getById('tableVentas');
   const $tbodyVentas = getFirstByTag<HTMLTableSectionElement>(
     $tableVentas,
@@ -77,7 +99,7 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
       }
     );
 
-  const render = (options: { idVendedor?: ID } = {}) => {
+  const render = (options) => {
     setTitle('Ventas');
     show($listVentas);
 
@@ -110,3 +132,5 @@ const listVentasHandler: Module<{ idVendedor?: ID }> = ($listVentas) => {
     close: () => hide($listVentas),
   };
 };
+
+export default listVentas;

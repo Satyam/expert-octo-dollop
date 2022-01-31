@@ -1,10 +1,9 @@
-import { getFirstByClass, getTarget, getAllByClass, getClosest } from '../gets';
-import { router } from '../routing';
-import apiService from '../apiService';
+import { getFirstByClass, getTarget, getAllByClass, getClosest } from './gets';
+import { router } from './utils';
+import apiService from './apiService';
+import { logout } from './login';
 
-import { logout } from '../login/login';
-
-export const navBar = ($navbar: HTMLElement) => {
+export default function ($navbar: HTMLElement) {
   const $toggleBtn = getFirstByClass($navbar, 'navbar-toggler');
   const $collapse = getFirstByClass($navbar, 'navbar-collapse');
   const $brand = getFirstByClass($navbar, 'navbar-brand');
@@ -49,4 +48,4 @@ export const navBar = ($navbar: HTMLElement) => {
     ev.preventDefault();
     router.push('/');
   };
-};
+}

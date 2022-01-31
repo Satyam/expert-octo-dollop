@@ -1,23 +1,23 @@
-import { getById, getFirstByClass, getFirstByTag } from '../gets';
-import apiService from '../apiService';
-import { readForm, resetForm, watchFormChanges } from '../form';
-import { router } from '../routing';
-import { show, hide } from '../utils';
+import { getById, getFirstByClass, getFirstByTag } from './gets';
+import apiService from './apiService';
+import { readForm, resetForm, watchFormChanges } from './form';
+import { show, hide, router } from './utils';
 
-export const setUser = (user: Partial<User>) => {
+export function setUser(user: Partial<User>) {
   if (user && user.nombre) {
     const $container = getById('container');
     $container.classList.replace('not-logged-in', 'is-logged-in');
     const $navbar = getById('navbar');
     getFirstByClass($navbar, 'user-name').textContent = user.nombre;
   }
-};
+}
 
-export const isLoggedIn = () =>
-  getById('container').classList.contains('is-logged-in');
+export function isLoggedIn() {
+  return getById('container').classList.contains('is-logged-in');
+}
 
-export const checkLoggedIn = () =>
-  apiService<{}, User>('auth', {
+export function checkLoggedIn() {
+  return apiService<{}, User>('auth', {
     op: 'isLoggedIn',
   }).then((user) => {
     if (user) {
@@ -27,10 +27,9 @@ export const checkLoggedIn = () =>
       if (isLoggedIn()) logout();
     }
   });
-
-checkLoggedIn();
-
-export const login: Module<void> = ($login) => {
+}
+export const login: Handler<void> = ($el) => {
+  const $login = $el || getById('login');
   const $form = getFirstByTag<HTMLFormElement>($login, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($login, 'button');
 
@@ -52,18 +51,16 @@ export const login: Module<void> = ($login) => {
 
   watchFormChanges($form, $submit);
 
-  const render = () => {
-    resetForm($form);
-    show($login);
-  };
-
   return {
-    render,
+    render: () => {
+      resetForm($form);
+      show($login);
+    },
     close: () => hide($login),
   };
 };
 
-export const logout = () => {
+export function logout() {
   // To ensure everything is erased, do actually navigate and get everything refreshed
   location.replace('/');
-};
+}
