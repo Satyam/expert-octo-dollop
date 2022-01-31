@@ -7,7 +7,7 @@ export default {
   output: {
     dir: 'public',
     format: 'es',
-    sourceMap: true,
+    sourcemap: true,
   },
   plugins: [
     typescript({
