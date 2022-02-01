@@ -9,7 +9,7 @@ import editVendedor from './editVendedor';
 import showVendedor from './showVendedor';
 import listVentas from './listVentas';
 
-navbar(getById('navbar'));
+navbar();
 
 checkLoggedIn();
 // routing

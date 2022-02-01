@@ -1,9 +1,16 @@
-import { getFirstByClass, getTarget, getAllByClass, getClosest } from './gets';
+import {
+  getFirstByClass,
+  getTarget,
+  getAllByClass,
+  getClosest,
+  getById,
+} from './gets';
 import { router } from './utils';
 import apiService from './apiService';
 import { logout } from './login';
 
-export default function ($navbar: HTMLElement) {
+export default function ($el?: HTMLElement) {
+  const $navbar = $el || getById('navbar');
   const $toggleBtn = getFirstByClass($navbar, 'navbar-toggler');
   const $collapse = getFirstByClass($navbar, 'navbar-collapse');
   const $brand = getFirstByClass($navbar, 'navbar-brand');
