@@ -9,6 +9,7 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
   const $showVendedor = $el || getById('showVendedor');
   // `listVentas` is not a template but a plain node, don't use `cloneTemplate` on it.
   const $panelVentas = <HTMLElement>getById('listVentas').cloneNode(true);
+  $panelVentas.removeAttribute('id');
   const $accordion = getFirstByClass($showVendedor, 'accordion');
   const { closeAllPanels } = handleAccordion($accordion);
 
