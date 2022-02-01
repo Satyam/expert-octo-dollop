@@ -1,7 +1,5 @@
 import { getById, getFirstByTag } from './gets';
 
-import insertHtml from './html';
-
 import { checkLoggedIn, login } from './login';
 import navbar from './navbar';
 import { showAndHideHandler, error } from './popups';
@@ -10,10 +8,6 @@ import listVendedores from './listVendedores';
 import editVendedor from './editVendedor';
 import showVendedor from './showVendedor';
 import listVentas from './listVentas';
-
-const container = getById('container');
-
-insertHtml(container);
 
 navbar(getById('navbar'));
 

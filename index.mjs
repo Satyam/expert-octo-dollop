@@ -6,7 +6,9 @@ import vendedores from './data/vendedores.mjs';
 import ventas from './data/ventas.mjs';
 import users from './data/user.mjs';
 import dotEnv from 'dotenv';
+import buildHtml from './src/html/buildHtml.mjs';
 
+buildHtml();
 const app = express();
 const port = 3000;
 
