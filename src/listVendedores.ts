@@ -12,12 +12,18 @@ import { confirmar } from './popups';
 
 export const listVendedores: Handler<void> = ($el) => {
   const $listVendedores = $el || getById('listVendedores');
-  const $tableVendedores = getById('tableVendedores');
+  const $tableVendedores = getFirstByTag<HTMLTableElement>(
+    $listVendedores,
+    'table'
+  );
   const $tbodyVendedores = getFirstByTag<HTMLTableSectionElement>(
     $tableVendedores,
     'tbody'
   );
-  const $tplVendedores = getById('tplVendedores') as HTMLTemplateElement;
+  const $tplVendedores = getFirstByTag<HTMLTemplateElement>(
+    $listVendedores,
+    'template'
+  );
 
   $tableVendedores.onclick = (ev) => {
     ev.preventDefault();

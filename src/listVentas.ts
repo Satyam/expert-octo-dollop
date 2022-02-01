@@ -21,12 +21,15 @@ import { confirmar } from './popups';
 
 export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
   const $listVentas = $el || getById('listVentas');
-  const $tableVentas = getById('tableVentas');
+  const $tableVentas = getFirstByTag<HTMLTableElement>($listVentas, 'table');
   const $tbodyVentas = getFirstByTag<HTMLTableSectionElement>(
     $tableVentas,
     'tbody'
   );
-  const $tplVentas = getById('tplVentas') as HTMLTemplateElement;
+  const $tplVentas = getFirstByTag<HTMLTemplateElement>(
+    $listVentas,
+    'template'
+  );
 
   $tableVentas.onclick = (ev) => {
     ev.preventDefault();
@@ -68,37 +71,6 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
     }
   };
 
-  const fr = ($row: HTMLTableRowElement, v: Venta) =>
-    fillRow<
-      Omit<Venta, 'precioUnitario' | 'fecha'> & {
-        precioTotal: string;
-        precioUnitario: string;
-        fecha: string;
-      }
-    >(
-      $row,
-      {
-        ...v,
-        precioTotal: formatCurrency(
-          (v.cantidad || 0) * (v.precioUnitario || 0)
-        ),
-        precioUnitario: formatCurrency(v.precioUnitario || 0),
-        fecha: formatDate(new Date(v.fecha)),
-      },
-      (name, $el, venta) => {
-        switch (name) {
-          case 'idVendedor':
-            $el.dataset.idVendedor = String(venta.idVendedor);
-            return true;
-          case 'iva':
-            $el.classList.add(venta.iva ? 'bi-check-square' : 'bi-square');
-            return true;
-          default:
-            return false;
-        }
-      }
-    );
-
   const render = (options) => {
     setTitle('Ventas');
     show($listVentas);
@@ -107,19 +79,38 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
       op: 'list',
       options,
     }).then((ventas) => {
-      const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVentas, 'tr');
-      $$tr.forEach(($row, index) => {
-        if (index >= ventas.length) {
-          $row.classList.add('hidden');
-        } else {
-          $row.classList.remove('hidden');
-          fr($row, ventas[index]);
-        }
-      });
-
-      ventas.slice($$tr.length).forEach((v) => {
+      $tbodyVentas.replaceChildren();
+      ventas.forEach((v) => {
         const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
-        fr($row, v);
+        fillRow<
+          Omit<Venta, 'precioUnitario' | 'fecha'> & {
+            precioTotal: string;
+            precioUnitario: string;
+            fecha: string;
+          }
+        >(
+          $row,
+          {
+            ...v,
+            precioTotal: formatCurrency(
+              (v.cantidad || 0) * (v.precioUnitario || 0)
+            ),
+            precioUnitario: formatCurrency(v.precioUnitario || 0),
+            fecha: formatDate(new Date(v.fecha)),
+          },
+          (name, $el, venta) => {
+            switch (name) {
+              case 'idVendedor':
+                $el.dataset.idVendedor = String(venta.idVendedor);
+                return true;
+              case 'iva':
+                $el.classList.add(venta.iva ? 'bi-check-square' : 'bi-square');
+                return true;
+              default:
+                return false;
+            }
+          }
+        );
         $tbodyVentas.append($row);
       });
       getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
