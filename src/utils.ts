@@ -34,7 +34,7 @@ export const fillRow = <D extends Record<string, any>>(
   fn?: (fieldName: string, $el: HTMLElement, v: D) => boolean
 ) => {
   $row.dataset.id = String(data.id);
-  getAllByClass($row, 'field').forEach(($el) => {
+  getAllByClass<HTMLElement>($row, 'field').forEach(($el) => {
     const field = $el.dataset.field;
     if (field) {
       if (fn) if (fn(field, $el, data)) return;
@@ -60,4 +60,8 @@ export const router = {
       })
     );
   },
+};
+
+export const setCheckboxIcon = ($el: HTMLElement, value: boolean) => {
+  $el.classList.add(value ? 'bi-check-square' : 'bi-square');
 };

@@ -16,6 +16,7 @@ import {
   formatCurrency,
   formatDate,
   router,
+  setCheckboxIcon,
 } from './utils';
 import { confirmar } from './popups';
 
@@ -104,7 +105,7 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
                 $el.dataset.idVendedor = String(venta.idVendedor);
                 return true;
               case 'iva':
-                $el.classList.add(venta.iva ? 'bi-check-square' : 'bi-square');
+                setCheckboxIcon($el, venta.iva);
                 return true;
               default:
                 return false;
