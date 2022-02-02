@@ -67,17 +67,8 @@ export const listVendedores: Handler<void> = ($el) => {
     apiService<{}, Vendedor[]>('vendedores', {
       op: 'list',
     }).then((vendedores) => {
-      const $$tr = getAllByTag<HTMLTableRowElement>($tbodyVendedores, 'tr');
-      $$tr.forEach(($row, index) => {
-        if (index >= vendedores.length) {
-          $row.classList.add('hidden');
-        } else {
-          $row.classList.remove('hidden');
-          fillRow($row, vendedores[index]);
-        }
-      });
-
-      vendedores.slice($$tr.length).forEach((v) => {
+      $tbodyVendedores.replaceChildren();
+      vendedores.forEach((v) => {
         const $row = cloneTemplate<HTMLTableRowElement>($tplVendedores);
         fillRow($row, v);
         $tbodyVendedores.append($row);
