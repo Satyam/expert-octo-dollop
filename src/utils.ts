@@ -63,5 +63,5 @@ export const router = {
 };
 
 export const setCheckboxIcon = ($el: HTMLElement, value: boolean) => {
-  $el.classList.add(value ? 'bi-check-square' : 'bi-square');
+  $el.classList.add(value ? 'bi-check-square' : 'bi-square', 'bi');
 };
