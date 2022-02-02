@@ -20,6 +20,7 @@ const files = [
   'listVendedores',
   'listVentas',
   'showVendedor',
+  'showVenta',
 ];
 
 export default function () {

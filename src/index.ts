@@ -8,6 +8,7 @@ import listVendedores from './listVendedores';
 import editVendedor from './editVendedor';
 import showVendedor from './showVendedor';
 import listVentas from './listVentas';
+import showVenta from './showVenta';
 
 navbar();
 
@@ -49,6 +50,11 @@ export const routes: Array<Route<any>> = [
     path: '/ventas',
     module: listVentas(),
     heading: 'Ventas',
+  },
+  {
+    path: '/venta/:id',
+    module: showVenta(),
+    heading: 'Venta',
   },
   {
     path: '*',
