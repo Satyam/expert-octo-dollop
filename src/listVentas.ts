@@ -83,33 +83,19 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
       $tbodyVentas.replaceChildren();
       ventas.forEach((v) => {
         const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
-        fillRow<
-          Omit<Venta, 'precioUnitario' | 'fecha'> & {
-            precioTotal: string;
-            precioUnitario: string;
-            fecha: string;
-          }
-        >(
+        fillRow<Venta & { precioTotal: number }>(
           $row,
           {
             ...v,
-            precioTotal: formatCurrency(
-              (v.cantidad || 0) * (v.precioUnitario || 0)
-            ),
-            precioUnitario: formatCurrency(v.precioUnitario || 0),
-            fecha: formatDate(new Date(v.fecha)),
+            precioTotal: (v.cantidad || 0) * (v.precioUnitario || 0),
           },
-          (name, $el, venta) => {
-            switch (name) {
-              case 'idVendedor':
-                $el.dataset.idVendedor = String(venta.idVendedor);
-                return true;
-              case 'iva':
-                setCheckboxIcon($el, venta.iva);
-                return true;
-              default:
-                return false;
-            }
+          {
+            idVendedor: ($el, venta) =>
+              ($el.dataset.idVendedor = String(venta.idVendedor)),
+            iva: 'boolean',
+            precioUnitario: 'currency',
+            precioTotal: 'currency',
+            fecha: 'date',
           }
         );
         $tbodyVentas.append($row);
