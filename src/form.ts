@@ -1,3 +1,5 @@
+import { formatDate, formatCurrency } from './utils';
+
 type FormElement =
   | HTMLInputElement
   | HTMLTextAreaElement
@@ -9,7 +11,34 @@ const getElements = ($form: HTMLFormElement): FormElement[] =>
 
 export const setForm = ($form: HTMLFormElement, v: Record<string, any>) => {
   getElements($form).forEach(($input) => {
-    $input.dataset.value = $input.value = v[$input.name] || '';
+    const value = v[$input.name];
+    switch ($input.nodeName.toLowerCase()) {
+      case 'input':
+        switch ($input.type) {
+          case 'number':
+            if ($input.dataset.currency) {
+              $input.dataset.value = $input.value = Number(value).toFixed(2);
+            } else {
+              $input.dataset.value = $input.value = value;
+            }
+            break;
+          case 'date':
+            $input.dataset.value = $input.value = value.split('T')[0];
+            break;
+          case 'checkbox':
+            (<HTMLInputElement>$input).checked = !!value;
+            $input.dataset.value = String(!!value);
+            break;
+          default:
+            $input.dataset.value = $input.value = String(value);
+        }
+        break;
+      case 'textarea':
+        $input.dataset.value = $input.innerHTML = value || '';
+        break;
+      case 'select':
+        break;
+    }
   });
 };
 
