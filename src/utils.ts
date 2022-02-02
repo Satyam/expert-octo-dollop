@@ -29,8 +29,8 @@ const currFormatter = new Intl.NumberFormat(locale, {
   currency,
 });
 
-export const formatCurrency = (value: number) =>
-  value ? currFormatter.format(value) : '';
+export const formatCurrency = (value?: number) =>
+  typeof value === 'undefined' ? '' : currFormatter.format(value);
 /**
  *
  * @param $row {HTMLTableRowElement} Table row to be filled up
