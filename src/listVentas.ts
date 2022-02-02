@@ -3,21 +3,11 @@ import {
   getById,
   getTarget,
   getClosest,
-  getAllByTag,
   cloneTemplate,
   getAllByClass,
 } from './gets';
 import apiService from './apiService';
-import {
-  show,
-  hide,
-  fillRow,
-  setTitle,
-  formatCurrency,
-  formatDate,
-  router,
-  setCheckboxIcon,
-} from './utils';
+import { show, hide, fillRow, setTitle, router } from './utils';
 import { confirmar } from './popups';
 
 export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
