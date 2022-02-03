@@ -15,6 +15,15 @@ const NOT_FOUND = 404;
 
 let _db;
 
+export function formatReply(q) {
+  return q
+    .then((data) => ({ data }))
+    .catch((err) => ({
+      error: err.code,
+      data: err.message,
+    }));
+}
+
 export function getDb() {
   return _db
     ? Promise.resolve(_db)
@@ -28,19 +37,15 @@ export function getDb() {
 }
 
 export function listAll(nombreTabla, camposSalida) {
-  return getDb()
-    .then((db) =>
+  return formatReply(
+    getDb().then((db) =>
       db.all(
         `select ${
           camposSalida ? camposSalida.join(',') : '*'
         } from ${nombreTabla}`
       )
     )
-    .then((data) => ({ data }))
-    .catch((err) => ({
-      error: err.code,
-      data: err.message,
-    }));
+  );
 }
 
 export function rawGetById(nombreTabla, id, camposSalida) {
@@ -63,21 +68,18 @@ export function getById(nombreTabla, id, camposSalida) {
 }
 
 const replyOneChange = (nombreTabla, id, camposSalida, query) =>
-  getDb()
-    .then(query)
-    .then((response) =>
-      response.changes === 1
-        ? rawGetById(nombreTabla, id ?? response.lastID, camposSalida)
-        : Promise.reject({
-            code: SQLITE_ERROR,
-            message: 'No changes made',
-          })
-    )
-    .then((data) => ({ data }))
-    .catch((err) => ({
-      error: err.code,
-      data: err.message,
-    }));
+  formatReply(
+    getDb()
+      .then(query)
+      .then((response) =>
+        response.changes === 1
+          ? rawGetById(nombreTabla, id ?? response.lastID, camposSalida)
+          : Promise.reject({
+              code: SQLITE_ERROR,
+              message: 'No changes made',
+            })
+      )
+  );
 
 export function createWithAutoId(
   nombreTabla,

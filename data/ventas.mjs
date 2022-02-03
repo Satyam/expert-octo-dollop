@@ -6,12 +6,13 @@ import {
   createWithCuid,
   updateById,
   deleteById,
+  formatReply,
 } from './utils.mjs';
 
 export default {
   list: ({ options }) =>
-    getDb()
-      .then((db) =>
+    formatReply(
+      getDb().then((db) =>
         options?.idVendedor
           ? db.all(
               `select * from ${TABLE_VENTAS} where idVendedor = $idVendedor order by fecha, id`,
@@ -25,15 +26,11 @@ export default {
               order by fecha, id`
             )
       )
-      .then((data) => ({ data }))
-      .catch((err) => ({
-        error: err.code,
-        data: err.message,
-      })),
+    ),
   remove: ({ id }) => deleteById(TABLE_VENTAS, id),
   get: ({ id }) =>
-    getDb()
-      .then((db) =>
+    formatReply(
+      getDb().then((db) =>
         db.get(
           `select ${TABLE_VENTAS}.*, ${TABLE_VENDEDORES}.nombre as vendedor from ${TABLE_VENTAS}
         inner join ${TABLE_VENDEDORES} on ${TABLE_VENTAS}.idVendedor = ${TABLE_VENDEDORES}.id  
@@ -41,11 +38,7 @@ export default {
           { $id: id }
         )
       )
-      .then((data) => ({ data }))
-      .catch((err) => ({
-        error: err.code,
-        data: err.message,
-      })),
+    ),
   create: ({ data }) => createWithCuid(TABLE_VENTAS, data),
   update: ({ id, data }) => updateById(TABLE_VENTAS, id, data),
 };
