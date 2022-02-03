@@ -31,7 +31,21 @@ export default {
         data: err.message,
       })),
   remove: ({ id }) => deleteById(TABLE_VENTAS, id),
-  get: ({ id }) => getById(TABLE_VENTAS, id),
+  get: ({ id }) =>
+    getDb()
+      .then((db) =>
+        db.get(
+          `select ${TABLE_VENTAS}.*, ${TABLE_VENDEDORES}.nombre as vendedor from ${TABLE_VENTAS}
+        inner join ${TABLE_VENDEDORES} on ${TABLE_VENTAS}.idVendedor = ${TABLE_VENDEDORES}.id  
+        where ${TABLE_VENTAS}.id = $id`,
+          { $id: id }
+        )
+      )
+      .then((data) => ({ data }))
+      .catch((err) => ({
+        error: err.code,
+        data: err.message,
+      })),
   create: ({ data }) => createWithCuid(TABLE_VENTAS, data),
   update: ({ id, data }) => updateById(TABLE_VENTAS, id, data),
 };
