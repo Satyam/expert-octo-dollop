@@ -12,7 +12,10 @@ export const showVenta: Handler<{ id: ID }> = ($el) => {
       id,
     }).then((v) => {
       if (v) {
-        setForm(getFirstByTag($showVenta, 'form'), v);
+        setForm(getFirstByTag($showVenta, 'form'), {
+          ...v,
+          precioTotal: v.cantidad * v.precioUnitario,
+        });
         show($showVenta);
       }
     });
