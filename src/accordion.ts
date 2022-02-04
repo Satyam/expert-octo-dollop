@@ -13,8 +13,8 @@ export const handleAccordion = ($a: HTMLElement) => {
     }
   };
 
-  const panels = getAllByTag<HTMLDetailsElement>($a, 'details').reduce(
-    ($$ps, $p) => {
+  const panels: Record<string, HTMLDetailsElement> =
+    getAllByTag<HTMLDetailsElement>($a, 'details').reduce(($$ps, $p) => {
       $p.addEventListener('toggle', toggleHandler);
       const panelName = $p.dataset.panel;
       return panelName
@@ -23,9 +23,7 @@ export const handleAccordion = ($a: HTMLElement) => {
             [panelName]: $p,
           }
         : $$ps;
-    },
-    {}
-  );
+    }, {});
 
   let currentOpen: string | undefined | null;
 

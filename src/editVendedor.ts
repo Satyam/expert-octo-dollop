@@ -32,25 +32,23 @@ export const editVendedor: Handler<{ id: ID }> = ($el) => {
   };
   watchFormChanges($form, $submit);
 
-  const render = ({ id }) => {
-    resetForm($form);
-    if (id) {
-      apiService<{}, Partial<Vendedor>>('vendedores', {
-        op: 'get',
-        id,
-      }).then((v) => {
-        getFirstByClass($form, 'btn').textContent = 'Modificar';
-        setForm($form, v);
-        show($editVendedor);
-      });
-    } else {
-      getFirstByClass($form, 'btn').textContent = 'Agregar';
-      show($editVendedor);
-    }
-  };
-
   return {
-    render,
+    render: ({ id }) => {
+      resetForm($form);
+      if (id) {
+        apiService<{}, Partial<Vendedor>>('vendedores', {
+          op: 'get',
+          id,
+        }).then((v) => {
+          getFirstByClass($form, 'btn').textContent = 'Modificar';
+          setForm($form, v);
+          show($editVendedor);
+        });
+      } else {
+        getFirstByClass($form, 'btn').textContent = 'Agregar';
+        show($editVendedor);
+      }
+    },
     close: () => hide($editVendedor),
   };
 };

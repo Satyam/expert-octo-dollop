@@ -13,32 +13,31 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
   const $accordion = getFirstByClass($showVendedor, 'accordion');
   const { closeAllPanels } = handleAccordion($accordion);
 
-  const render = ({ id }) => {
-    $accordion.addEventListener('openPanel', ((ev: CustomEvent) => {
-      const $panelBody = getTarget(ev);
-      switch (ev.detail) {
-        case 'ventas':
-          if ($panelBody.children.length === 0) $panelBody.append($panelVentas);
-          listVentas($panelVentas).render({ idVendedor: id });
-          break;
-        case 'consigna':
-          break;
-      }
-    }) as EventListener);
-
-    apiService<{}, Vendedor>('vendedores', {
-      op: 'get',
-      id,
-    }).then((v) => {
-      if (v) {
-        setForm(getFirstByTag($showVendedor, 'form'), v);
-        show($showVendedor);
-      }
-    });
-  };
-
   return {
-    render,
+    render: ({ id }) => {
+      $accordion.addEventListener('openPanel', ((ev: CustomEvent) => {
+        const $panelBody = getTarget(ev);
+        switch (ev.detail) {
+          case 'ventas':
+            if ($panelBody.children.length === 0)
+              $panelBody.append($panelVentas);
+            listVentas($panelVentas).render({ idVendedor: id });
+            break;
+          case 'consigna':
+            break;
+        }
+      }) as EventListener);
+
+      apiService<{}, Vendedor>('vendedores', {
+        op: 'get',
+        id,
+      }).then((v) => {
+        if (v) {
+          setForm(getFirstByTag($showVendedor, 'form'), v);
+          show($showVendedor);
+        }
+      });
+    },
     close: () => {
       closeAllPanels();
       hide($showVendedor);

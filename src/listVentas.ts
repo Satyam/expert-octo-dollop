@@ -62,41 +62,40 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
     }
   };
 
-  const render = (options) => {
-    setTitle('Ventas');
-    show($listVentas);
-
-    apiService<{}, VentaYVendedor[]>('ventas', {
-      op: 'list',
-      options,
-    }).then((ventas) => {
-      $tbodyVentas.replaceChildren();
-      ventas.forEach((v) => {
-        const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
-        fillRow<Venta & { precioTotal: number }>(
-          $row,
-          {
-            ...v,
-            precioTotal: (v.cantidad || 0) * (v.precioUnitario || 0),
-          },
-          {
-            idVendedor: ($el, venta) =>
-              ($el.dataset.idVendedor = String(venta.idVendedor)),
-            iva: 'boolean',
-            precioUnitario: 'currency',
-            precioTotal: 'currency',
-            fecha: 'date',
-          }
-        );
-        $tbodyVentas.append($row);
-      });
-      getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
-        $el.classList.toggle('hidden', !!options.idVendedor);
-      });
-    });
-  };
   return {
-    render,
+    render: (options) => {
+      setTitle('Ventas');
+      show($listVentas);
+
+      apiService<{}, VentaYVendedor[]>('ventas', {
+        op: 'list',
+        options,
+      }).then((ventas) => {
+        $tbodyVentas.replaceChildren();
+        ventas.forEach((v) => {
+          const $row = cloneTemplate<HTMLTableRowElement>($tplVentas);
+          fillRow<Venta & { precioTotal: number }>(
+            $row,
+            {
+              ...v,
+              precioTotal: (v.cantidad || 0) * (v.precioUnitario || 0),
+            },
+            {
+              idVendedor: ($el, venta) =>
+                ($el.dataset.idVendedor = String(venta.idVendedor)),
+              iva: 'boolean',
+              precioUnitario: 'currency',
+              precioTotal: 'currency',
+              fecha: 'date',
+            }
+          );
+          $tbodyVentas.append($row);
+        });
+        getAllByClass($tableVentas, 'idVendedor').forEach(($el) => {
+          $el.classList.toggle('hidden', !!options.idVendedor);
+        });
+      });
+    },
     close: () => hide($listVentas),
   };
 };
