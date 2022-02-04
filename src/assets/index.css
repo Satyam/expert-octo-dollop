@@ -34,3 +34,7 @@
 .not-logged-in .logged-in {
   display: none;
 }
+
+label {
+  margin: 0.3rem 0;
+}
