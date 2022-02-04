@@ -9,11 +9,7 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    typescript({
-      lib: ['es2021', 'dom', 'dom.iterable'],
-      baseUrl: 'src',
-      moduleResolution: 'node',
-    }),
+    typescript(),
     copy({
       targets: [{ src: 'src/assets/*', dest: 'public' }],
     }),
