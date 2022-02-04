@@ -7,7 +7,6 @@ export const showVenta: Handler<{ id: ID }> = ($el) => {
   const $showVenta = $el || getById('showVenta');
   const $vendedorLink = getFirstByTag($showVenta, 'a');
   let _listener: EventListener;
-  getFirstByTag($showVenta, 'a').addEventListener('click', (ev) => {});
 
   return {
     render: ({ id }) => {
