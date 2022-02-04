@@ -107,3 +107,4 @@ dist
 db.sqlite.sql
 db.sqlite
 public/
+.rollup.cache/
