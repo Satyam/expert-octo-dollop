@@ -66,12 +66,18 @@ export const handleAccordion = ($a: HTMLElement) => {
 
   const closeAllPanels = () => closePanel(currentOpen || '');
 
+  const destroy = () => {
+    getAllByTag<HTMLDetailsElement>($a, 'details').forEach(($p) => {
+      $p.removeEventListener('toggle', toggleHandler);
+    });
+  };
   return {
     openPanel,
     closePanel,
     togglePanel,
     closeAllPanels,
     getOpenPanel: () => currentOpen,
+    destroy,
   };
 };
 
