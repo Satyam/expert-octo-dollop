@@ -56,15 +56,15 @@ type Venta = {
   iva?: boolean;
 };
 
-type HandlerReturn<RParams extends unknown, SearchOpts extends any = {}> = {
+type HandlerReturn<RParams, SearchOpts extends any = {}> = {
   render: (r: RParams, s?: SearchOpts) => void;
   close: () => void;
 };
-type Handler<RParams extends unknown, SearchOpts extends any = {}> = (
+type Handler<RParams, SearchOpts extends any = {}> = (
   el?: HTMLElement
 ) => HandlerReturn<RParams, SearchOpts>;
 
-type Route<RParams extends unknown, SearchOpts extends any = {}> = {
+type Route<RParams, SearchOpts extends any = {}> = {
   path: string;
   module: HandlerReturn<RParams, SearchOpts>;
   heading?: string;
