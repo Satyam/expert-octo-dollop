@@ -8,7 +8,7 @@ export const editVendedor: Handler<{ id: ID }> = ($el) => {
   const $form = getFirstByTag<HTMLFormElement>($editVendedor, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($editVendedor, 'button');
 
-  $form.onsubmit = (ev) => {
+  $form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
     const data = readForm<Partial<Vendedor>>($form);
@@ -29,7 +29,7 @@ export const editVendedor: Handler<{ id: ID }> = ($el) => {
         }
       });
     }
-  };
+  });
   watchFormChanges($form, $submit);
 
   return {

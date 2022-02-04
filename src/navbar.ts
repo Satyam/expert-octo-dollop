@@ -43,16 +43,16 @@ export default function ($el?: HTMLElement) {
   };
 
   getAllByClass($navbar, 'navbar-nav').forEach(($menu) => {
-    $menu.onclick = menuHandler;
+    $menu.addEventListener('click', menuHandler);
   });
 
-  $toggleBtn.onclick = (ev) => {
+  $toggleBtn.addEventListener('click', (ev) => {
     ev.preventDefault();
     $collapse.classList.toggle('show');
-  };
+  });
 
-  $brand.onclick = (ev) => {
+  $brand.addEventListener('click', (ev) => {
     ev.preventDefault();
     router.push('/');
-  };
+  });
 }

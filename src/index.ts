@@ -103,9 +103,9 @@ export function matchPath(refresh?: boolean) {
 
 matchPath();
 
-window.onpopstate = () => {
+window.addEventListener('popstate', () => {
   matchPath();
-};
+});
 window.addEventListener('router', ((ev: CustomEvent) => {
   matchPath(ev.detail.refresh);
 }) as EventListener);

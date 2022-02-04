@@ -25,7 +25,7 @@ export const listVendedores: Handler<void> = ($el) => {
     'template'
   );
 
-  $tableVendedores.onclick = (ev) => {
+  $tableVendedores.addEventListener('click', (ev) => {
     ev.preventDefault();
     const $t = getTarget(ev);
     const action = getClosest($t, '.action')?.dataset.action;
@@ -59,7 +59,7 @@ export const listVendedores: Handler<void> = ($el) => {
           break;
       }
     }
-  };
+  });
 
   const render = () => {
     setTitle('Vendedores');

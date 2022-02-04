@@ -57,7 +57,7 @@ export const watchFormChanges = (
   $submit: HTMLButtonElement
 ) => {
   getElements($form).forEach(($input) => {
-    $input.oninput = () => {
+    $input.addEventListener('input', () => {
       $submit.disabled = true;
       getElements($form).some(($i) => {
         if ($i.value !== $i.dataset.value) {
@@ -65,7 +65,7 @@ export const watchFormChanges = (
           return true;
         }
       });
-    };
+    });
   });
 };
 

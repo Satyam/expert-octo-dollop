@@ -33,7 +33,7 @@ export const login: Handler<void> = ($el) => {
   const $form = getFirstByTag<HTMLFormElement>($login, 'form');
   const $submit = getFirstByTag<HTMLButtonElement>($login, 'button');
 
-  $form.onsubmit = (ev) => {
+  $form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
     const data = readForm<Partial<User>>($form);
@@ -47,7 +47,7 @@ export const login: Handler<void> = ($el) => {
         router.replace('/');
       });
     }
-  };
+  });
 
   watchFormChanges($form, $submit);
 

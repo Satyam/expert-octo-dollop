@@ -22,7 +22,7 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
     'template'
   );
 
-  $tableVentas.onclick = (ev) => {
+  $tableVentas.addEventListener('click', (ev) => {
     ev.preventDefault();
     const $t = getTarget(ev);
     const action = getClosest($t, '.action')?.dataset.action;
@@ -60,7 +60,7 @@ export const listVentas: Handler<{ idVendedor?: ID }> = ($el) => {
           break;
       }
     }
-  };
+  });
 
   return {
     render: (options) => {

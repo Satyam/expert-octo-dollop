@@ -41,7 +41,7 @@ export const confirmarHandler = ($confirm: HTMLElement) => {
 
       $confirm.style.display = 'block';
       $confirm.classList.add('show');
-      $confirm.onclick = (ev) => {
+      $confirm.addEventListener('click', (ev) => {
         ev.preventDefault();
         const $t = getClosest(getTarget(ev), '.action');
         switch ($t?.dataset.action) {
@@ -54,7 +54,7 @@ export const confirmarHandler = ($confirm: HTMLElement) => {
             resolve(false);
             break;
         }
-      };
+      });
     });
   return {
     ask,
