@@ -1,8 +1,8 @@
-import { getFirstByTag, getFirstByClass, getById, getTarget } from './gets';
+import { getFirstByTag, getFirstByClass, getById } from './gets';
 import apiService from './apiService';
 import { show, hide } from './utils';
 import { setForm } from './form';
-import handleAccordion from './accordion';
+import Accordion, { AccordionPanelEventDetails } from './accordion';
 import listVentas from './listVentas';
 
 export const showVendedor: Handler<{ id: ID }> = ($el) => {
@@ -10,17 +10,21 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
   // `listVentas` is not a template but a plain node, don't use `cloneTemplate` on it.
   const $panelVentas = <HTMLElement>getById('listVentas').cloneNode(true);
   $panelVentas.removeAttribute('id');
-  const $accordion = getFirstByClass($showVendedor, 'accordion');
-  const { closeAllPanels } = handleAccordion($accordion);
+
+  const accordion = new Accordion(getFirstByClass($showVendedor, 'accordion'), {
+    ventas: 'Ventas',
+    consigna: 'Consigna',
+  });
 
   return {
     render: ({ id }) => {
-      $accordion.addEventListener('openPanel', ((ev: CustomEvent) => {
-        const $panelBody = getTarget(ev);
-        switch (ev.detail) {
+      accordion.addEventListener('openPanel', ((
+        ev: CustomEvent<AccordionPanelEventDetails>
+      ) => {
+        const { panelName, $body } = ev.detail;
+        switch (panelName) {
           case 'ventas':
-            if ($panelBody.children.length === 0)
-              $panelBody.append($panelVentas);
+            if ($body.children.length === 0) $body.append($panelVentas);
             listVentas($panelVentas).render({ idVendedor: id });
             break;
           case 'consigna':
@@ -39,7 +43,7 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
       });
     },
     close: () => {
-      closeAllPanels();
+      accordion.closeAllPanels();
       hide($showVendedor);
     },
   };

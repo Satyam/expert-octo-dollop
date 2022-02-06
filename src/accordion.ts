@@ -1,84 +1,111 @@
 import { getTarget, getAllByTag } from './gets';
 
-export const handleAccordion = ($a: HTMLElement) => {
-  const toggleHandler = (ev: Event) => {
-    const $d = getTarget<HTMLDetailsElement>(ev);
-    const panelName = $d.dataset.panel;
+export type AccordionPanelEventDetails = {
+  panelName: string;
+  $panel: HTMLDetailsElement;
+  $header: HTMLElement;
+  $body: HTMLElement;
+};
+
+/**
+ * @class Accordion
+ *  Builds and accordion, allows handling of it and fires events after user interactions.
+ */
+export default class Accordion {
+  private _currentOpen: string | null = null;
+  private _panels: Record<string, AccordionPanelEventDetails> = {};
+  private _a: HTMLElement;
+  private _eventTarget: EventTarget;
+
+  /**
+   *
+   * @param $a HTMLElement that will contain the accordion
+   * @param panels Object with titles for the panels.  The key will serve as reference to the panel
+   */
+  constructor($a: HTMLElement, panels: Record<string, string>) {
+    this._eventTarget = new EventTarget();
+    this._a = $a;
+    for (const panelName in panels) {
+      const $panel = document.createElement('details');
+      $panel.classList.add('card');
+      $panel.dataset.panel = panelName;
+      $panel.addEventListener('toggle', this._toggleHandler);
+      const $header = document.createElement('summary');
+      $header.classList.add('card-header');
+      $header.textContent = panels[panelName];
+      $panel.appendChild($header);
+      const $body = document.createElement('div');
+      $body.classList.add('card-body');
+      $panel.appendChild($body);
+      $a.appendChild($panel);
+      this._panels[panelName] = { panelName, $panel, $header, $body };
+    }
+  }
+
+  private _toggleHandler = (ev: Event): void => {
+    const $panel = getTarget<HTMLDetailsElement>(ev);
+    const panelName = $panel.dataset.panel;
     if (panelName) {
-      if ($d.open) {
-        openPanel(panelName);
+      if ($panel.open) {
+        this.openPanel(panelName);
       } else {
-        closePanel(panelName);
+        this.closePanel(panelName);
       }
     }
   };
 
-  const panels: Record<string, HTMLDetailsElement> =
-    getAllByTag<HTMLDetailsElement>($a, 'details').reduce(($$ps, $p) => {
-      $p.addEventListener('toggle', toggleHandler);
-      const panelName = $p.dataset.panel;
-      return panelName
-        ? {
-            ...$$ps,
-            [panelName]: $p,
-          }
-        : $$ps;
-    }, {});
+  get currentOpen(): string | null {
+    return this._currentOpen;
+  }
 
-  let currentOpen: string | undefined | null;
+  addEventListener(name: string, callback: EventListener) {
+    this._eventTarget.addEventListener(name, callback);
+  }
 
-  const closePanel = (panelName: string) => {
-    const $panel = panels[panelName];
-    if (!$panel) return;
-    if (panelName === currentOpen) {
-      currentOpen = null;
-      $panel.open = false;
-      $panel.children[1].dispatchEvent(
+  closePanel(panelName: string): void {
+    const panel = this._panels[panelName];
+    if (!panel) return;
+    if (panelName === this._currentOpen) {
+      this._currentOpen = null;
+      panel.$panel.open = false;
+      this._eventTarget.dispatchEvent(
         new CustomEvent('closePanel', {
           bubbles: true,
-          detail: panelName,
+          detail: panel,
         })
       );
     }
-  };
+  }
 
-  const openPanel = (panelName: string) => {
-    const $panel = panels[panelName];
-    if (!$panel) return;
-    if (currentOpen) closePanel(currentOpen);
-    currentOpen = panelName;
-    $panel.open = true;
-    $panel.children[1].dispatchEvent(
+  openPanel(panelName: string): void {
+    const panel = this._panels[panelName];
+    if (!panel) return;
+    if (this._currentOpen) this.closePanel(this._currentOpen);
+    this._currentOpen = panelName;
+    panel.$panel.open = true;
+    this._eventTarget.dispatchEvent(
       new CustomEvent('openPanel', {
         bubbles: true,
-        detail: panelName,
+        detail: panel,
       })
     );
-  };
+  }
 
-  const togglePanel = (panelName: string) => {
-    if (panelName === currentOpen) {
-      closePanel(panelName);
+  togglePanel(panelName: string): void {
+    if (panelName === this._currentOpen) {
+      this.closePanel(panelName);
     } else {
-      openPanel(panelName);
+      this.openPanel(panelName);
     }
-  };
+  }
 
-  const closeAllPanels = () => closePanel(currentOpen || '');
+  closeAllPanels(): void {
+    this.closePanel(this._currentOpen || '');
+  }
 
-  const destroy = () => {
-    getAllByTag<HTMLDetailsElement>($a, 'details').forEach(($p) => {
-      $p.removeEventListener('toggle', toggleHandler);
+  destroy(): void {
+    getAllByTag<HTMLDetailsElement>(this._a, 'details').forEach(($p) => {
+      $p.removeEventListener('toggle', this._toggleHandler);
     });
-  };
-  return {
-    openPanel,
-    closePanel,
-    togglePanel,
-    closeAllPanels,
-    getOpenPanel: () => currentOpen,
-    destroy,
-  };
-};
-
-export default handleAccordion;
+  }
+}
