@@ -1,7 +1,7 @@
 import { getFirstByTag, getFirstByClass, getById } from './gets';
 import apiService from './apiService';
 import { show, hide } from './utils';
-import { setForm } from './form';
+import Form from './form';
 import Accordion, { AccordionPanelEventDetails } from './accordion';
 import listVentas from './listVentas';
 
@@ -18,6 +18,8 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
 
   return {
     render: ({ id }) => {
+      const form = new Form<Vendedor>(getFirstByTag($showVendedor, 'form'));
+
       accordion.addEventListener('openPanel', ((
         ev: CustomEvent<AccordionPanelEventDetails>
       ) => {
@@ -37,7 +39,7 @@ export const showVendedor: Handler<{ id: ID }> = ($el) => {
         id,
       }).then((v) => {
         if (v) {
-          setForm(getFirstByTag($showVendedor, 'form'), v);
+          form.setForm(v);
           show($showVendedor);
         }
       });

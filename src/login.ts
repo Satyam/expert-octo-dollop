@@ -1,6 +1,6 @@
 import { getById, getFirstByClass, getFirstByTag } from './gets';
 import apiService from './apiService';
-import { readForm, resetForm, watchFormChanges } from './form';
+import Form from './form';
 import { show, hide, router } from './utils';
 
 export function setUser(user: Partial<User>) {
@@ -30,33 +30,31 @@ export function checkLoggedIn() {
 }
 export const login: Handler<void> = ($el) => {
   const $login = $el || getById('login');
-  const $form = getFirstByTag<HTMLFormElement>($login, 'form');
-  const $submit = getFirstByTag<HTMLButtonElement>($login, 'button');
-
-  $form.addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const data = readForm<Partial<User>>($form);
-    if (data) {
-      apiService<Partial<User>>('auth', {
-        op: 'login',
-        data,
-      }).then((user) => {
-        setUser(user);
-        setTimeout(checkLoggedIn, 1_800_000);
-        router.replace('/');
-      });
+  const form = new Form<Partial<User>>(
+    getFirstByTag<HTMLFormElement>($login, 'form'),
+    (data) => {
+      if (data) {
+        apiService<Partial<User>>('auth', {
+          op: 'login',
+          data,
+        }).then((user) => {
+          setUser(user);
+          setTimeout(checkLoggedIn, 1_800_000);
+          router.replace('/');
+        });
+      }
     }
-  });
-
-  watchFormChanges($form, $submit);
+  );
 
   return {
     render: () => {
-      resetForm($form);
+      form.resetForm();
       show($login);
     },
-    close: () => hide($login),
+    close: () => {
+      form.destroy();
+      hide($login);
+    },
   };
 };
 

@@ -1,75 +1,111 @@
-import { formatDate, formatCurrency } from './utils';
-
 type FormElement =
   | HTMLInputElement
   | HTMLTextAreaElement
   | HTMLSelectElement
   | HTMLButtonElement;
 
-const getElements = ($form: HTMLFormElement): FormElement[] =>
-  Array.from($form.elements) as FormElement[];
+export default class Form<D extends Record<string, any>> {
+  private _f: HTMLFormElement;
+  private _els: FormElement[];
+  private _submitButton: HTMLButtonElement | null;
+  private _values: Record<string, any> = {};
+  private _submitHandler: ((values: D) => void) | null;
 
-export const setForm = ($form: HTMLFormElement, v: Record<string, any>) => {
-  getElements($form).forEach(($input) => {
-    const value = v[$input.name];
-    switch ($input.nodeName.toLowerCase()) {
-      case 'input':
-        switch ($input.type) {
-          case 'number':
-            if ($input.dataset.currency) {
-              $input.dataset.value = $input.value = Number(value).toFixed(2);
-            } else {
-              $input.dataset.value = $input.value = value;
-            }
-            break;
-          case 'date':
-            $input.dataset.value = $input.value = value.split('T')[0];
-            break;
-          case 'checkbox':
-            (<HTMLInputElement>$input).checked = !!value;
-            $input.dataset.value = String(!!value);
-            break;
-          default:
-            $input.dataset.value = $input.value = String(value);
-        }
-        break;
-      case 'textarea':
-        $input.dataset.value = $input.innerHTML = value || '';
-        break;
-      case 'select':
-        break;
+  constructor(
+    $f: HTMLFormElement,
+    submitHandler: ((values: D) => void) | null = null
+  ) {
+    this._f = $f;
+    this._els = Array.from($f.elements) as FormElement[];
+    this._submitHandler = submitHandler;
+    if (submitHandler) {
+      $f.addEventListener('submit', this._formSubmitHandler);
     }
-  });
-};
-
-export const readForm = <D extends Record<string, any>>(
-  $form: HTMLFormElement
-): D | undefined => {
-  $form.classList.add('was-validated');
-  if ($form.checkValidity()) {
-    return Object.fromEntries(new FormData($form)) as D;
-  }
-  return undefined;
-};
-
-export const watchFormChanges = (
-  $form: HTMLFormElement,
-  $submit: HTMLButtonElement
-) => {
-  getElements($form).forEach(($input) => {
-    $input.addEventListener('input', () => {
-      $submit.disabled = true;
-      getElements($form).some(($i) => {
-        if ($i.value !== $i.dataset.value) {
-          $submit.disabled = false;
-          return true;
-        }
+    this._submitButton = $f.querySelector('[type=submit]');
+    if (this._submitButton) {
+      this._els.forEach(($input) => {
+        $input.addEventListener('input', this._inputChangeHandler);
       });
-    });
-  });
-};
+    }
+  }
 
-export const resetForm = ($form: HTMLFormElement) => {
-  $form.reset();
-  $form.classList.remove('was-validated');
-};
+  private _formSubmitHandler = (ev: SubmitEvent): void => {
+    const handler = this._submitHandler;
+    const values = this.readForm();
+    if (handler && values) {
+      ev.preventDefault();
+      handler(values);
+    }
+  };
+
+  private _inputChangeHandler = (ev: Event): void => {
+    const vals = this._values;
+    const $submit = this._submitButton;
+    if ($submit) {
+      $submit.disabled = !this._els.some(($i) => $i.value !== vals[$i.name]);
+    }
+  };
+
+  get submitButton() {
+    return this._submitButton;
+  }
+
+  setForm(v: D): void {
+    const vals = this._values;
+    this._els.forEach(($input) => {
+      const name = $input.name;
+      const value = v[name];
+      switch ($input.nodeName.toLowerCase()) {
+        case 'input':
+          switch ($input.type) {
+            case 'number':
+              if ($input.dataset.currency) {
+                vals[name] = $input.value = Number(value).toFixed(2);
+              } else {
+                vals[name] = $input.value = value;
+              }
+              break;
+            case 'date':
+              vals[name] = $input.value = value.split('T')[0];
+              break;
+            case 'checkbox':
+              (<HTMLInputElement>$input).checked = !!value;
+              vals[name] = String(!!value);
+              break;
+            default:
+              vals[name] = $input.value = String(value);
+          }
+          break;
+        case 'textarea':
+          vals[name] = $input.innerHTML = value || '';
+          break;
+        case 'select':
+          break;
+      }
+    });
+  }
+
+  readForm(): D | undefined {
+    const f = this._f;
+    f.classList.add('was-validated');
+    if (f.checkValidity()) {
+      return Object.fromEntries(new FormData(f)) as D;
+    }
+    return undefined;
+  }
+
+  resetForm(): void {
+    const f = this._f;
+    f.reset();
+    f.classList.remove('was-validated');
+    this._values = Object.fromEntries(new FormData(f));
+  }
+
+  destroy(): void {
+    this.resetForm();
+    this._els.forEach(($input) => {
+      $input.removeEventListener('input', this._inputChangeHandler);
+    });
+    this._f.removeEventListener('submit', this._formSubmitHandler);
+  }
+}
