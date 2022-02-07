@@ -16,7 +16,11 @@ export default class Form<D extends Record<string, any>> {
     submitHandler: ((values: D) => void) | null = null
   ) {
     this._f = $f;
-    this._els = Array.from($f.elements) as FormElement[];
+    this._els = Array.from($f.elements).filter(
+      ($el) =>
+        $el.nodeName.toLocaleLowerCase() !== 'button' &&
+        $el.getAttribute('type') !== 'submit'
+    ) as FormElement[];
     this._submitHandler = submitHandler;
     if (submitHandler) {
       $f.addEventListener('submit', this._formSubmitHandler);
