@@ -93,7 +93,39 @@ export default class Form<D extends Record<string, any>> {
     const f = this._f;
     f.classList.add('was-validated');
     if (f.checkValidity()) {
-      return Object.fromEntries(new FormData(f)) as D;
+      return this._els.reduce<D>((vals, $el) => {
+        const name = $el.name;
+        let v: any;
+        switch ($el.nodeName.toLocaleLowerCase()) {
+          case 'input':
+            switch ($el.type) {
+              case 'date':
+                v = new Date($el.value);
+                break;
+              case 'checkbox':
+                v = ($el as HTMLInputElement).checked;
+                break;
+              default:
+                v = $el.value;
+                break;
+            }
+            break;
+          case 'textarea':
+            v = $el.textContent;
+            break;
+          case 'select':
+            v = $el.value;
+            break;
+          default:
+            v = $el.value;
+            break;
+        }
+
+        return {
+          ...vals,
+          [name]: v,
+        };
+      }, {} as D);
     }
     return undefined;
   }
