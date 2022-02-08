@@ -1,3 +1,6 @@
+import apiService from 'apiService';
+import { cloneTemplate, getAllByTag, getById, getFirstByTag } from 'gets';
+
 type FormElement =
   | HTMLInputElement
   | HTMLTextAreaElement
@@ -70,7 +73,9 @@ export default class Form<D extends Record<string, any>> {
               }
               break;
             case 'date':
-              vals[name] = $input.value = value.split('T')[0];
+              vals[name] = $input.value = (
+                value instanceof Date ? value.toISOString() : value
+              ).split('T')[0];
               break;
             case 'checkbox':
               (<HTMLInputElement>$input).checked = !!value;
@@ -110,9 +115,6 @@ export default class Form<D extends Record<string, any>> {
                 break;
             }
             break;
-          case 'textarea':
-            v = $el.textContent;
-            break;
           case 'select':
             v = $el.value;
             break;
@@ -135,6 +137,15 @@ export default class Form<D extends Record<string, any>> {
     f.reset();
     f.classList.remove('was-validated');
     this._values = Object.fromEntries(new FormData(f));
+    getAllByTag<HTMLSelectElement>(f, 'select')?.forEach(($s) => {
+      if ($s.length === 0) {
+        switch ($s.dataset.options) {
+          case 'optionsVendedores':
+            populateVendedores($s);
+            break;
+        }
+      }
+    });
   }
 
   destroy(): void {
@@ -145,3 +156,28 @@ export default class Form<D extends Record<string, any>> {
     this._f.removeEventListener('submit', this._formSubmitHandler);
   }
 }
+
+const compareIgnoreCase =
+  (prop: string) =>
+  (a: Record<string, any>, b: Record<string, any>): number => {
+    const propA = a[prop].toUpperCase(); // ignore upper and lowercase
+    const propB = b[prop].toUpperCase(); // ignore upper and lowercase
+    if (propA < propB) return -1;
+    if (propA > propB) return 1;
+    return 0;
+  };
+
+const populateVendedores = ($sel: HTMLSelectElement): Promise<void> =>
+  apiService<Vendedor[]>('vendedores', {
+    op: 'list',
+  }).then((vs) => {
+    const o = document.createElement('option');
+    o.textContent = '---';
+    $sel.add(o);
+    vs.sort(compareIgnoreCase('nombre')).forEach((v) => {
+      const o = document.createElement('option');
+      o.value = String(v.id);
+      o.textContent = v.nombre;
+      $sel.add(o);
+    });
+  });
