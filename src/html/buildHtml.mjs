@@ -17,6 +17,7 @@ const files = [
   'home',
   'login',
   'editVendedor',
+  'editVenta',
   'listVendedores',
   'listVentas',
   'showVendedor',
