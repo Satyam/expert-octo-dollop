@@ -1,6 +1,7 @@
 import { getById, getFirstByTag } from './gets';
 
 import { checkLoggedIn, login } from './login';
+
 import navbar from './navbar';
 import { showAndHideHandler, error } from './popups';
 
@@ -9,13 +10,16 @@ import editVendedor from './editVendedor';
 import showVendedor from './showVendedor';
 import listVentas from './listVentas';
 import showVenta from './showVenta';
-
+import editVenta from './editVenta';
 navbar();
 
 checkLoggedIn();
 // routing
 
-export const routes: Array<Route<any>> = [
+const edVenta = editVenta();
+const edVendedor = editVendedor();
+
+const routes: Array<Route<any>> = [
   {
     path: '/',
     module: showAndHideHandler(getById('welcome')),
@@ -33,12 +37,12 @@ export const routes: Array<Route<any>> = [
   },
   {
     path: '/vendedor/edit/:id',
-    module: editVendedor(),
+    module: edVendedor,
     heading: 'Modificar vendedor',
   },
   {
     path: '/vendedor/new',
-    module: editVendedor(),
+    module: edVendedor,
     heading: 'Agregar vendedor',
   },
   {
@@ -50,6 +54,16 @@ export const routes: Array<Route<any>> = [
     path: '/ventas',
     module: listVentas(),
     heading: 'Ventas',
+  },
+  {
+    path: '/venta/edit/:id',
+    module: edVenta,
+    heading: 'Modificar venta',
+  },
+  {
+    path: '/venta/new',
+    module: edVenta,
+    heading: 'Agregar venta',
   },
   {
     path: '/venta/:id',
@@ -80,7 +94,7 @@ routes.forEach((r) => {
 let currentModule: HandlerReturn<any> | null = null;
 let currentPath = '';
 
-export function matchPath(refresh?: boolean) {
+function matchPath(refresh?: boolean) {
   error.close(); // Just in case there is any open
   const path = location.pathname;
   const fullPath = path + location.search;
