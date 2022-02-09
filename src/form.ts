@@ -146,6 +146,9 @@ export default class Form<D extends Record<string, any>> {
               case 'checkbox':
                 v = ($el as HTMLInputElement).checked;
                 break;
+              case 'number':
+                v = parseFloat($el.value);
+                break;
               default:
                 v = $el.value;
                 break;
