@@ -32,6 +32,10 @@ export function getDb() {
         driver: sqlite3.Database,
       }).then((db) => {
         _db = db;
+        // un-comment the following to show statements
+        // db.on('trace', (data) => {
+        //   console.log(JSON.stringify(data, null, 2));
+        // });
         return db;
       });
 }

@@ -2,8 +2,7 @@ import {
   TABLE_VENTAS,
   TABLE_VENDEDORES,
   getDb,
-  getById,
-  createWithCuid,
+  createWithAutoId,
   updateById,
   deleteById,
   formatReply,
@@ -39,6 +38,6 @@ export default {
         )
       )
     ),
-  create: ({ data }) => createWithCuid(TABLE_VENTAS, data),
+  create: ({ data }) => createWithAutoId(TABLE_VENTAS, data),
   update: ({ id, data }) => updateById(TABLE_VENTAS, id, data),
 };
