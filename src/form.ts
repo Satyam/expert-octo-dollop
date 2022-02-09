@@ -1,5 +1,11 @@
 import apiService from 'apiService';
-import { cloneTemplate, getAllByTag, getById, getFirstByTag } from 'gets';
+import {
+  cloneTemplate,
+  getAllByTag,
+  getById,
+  getFirstByTag,
+  getTarget,
+} from 'gets';
 
 type FormElement =
   | HTMLInputElement
@@ -13,6 +19,8 @@ export default class Form<D extends Record<string, any>> {
   private _submitButton: HTMLButtonElement | null;
   private _values: Record<string, any> = {};
   private _submitHandler: ((values: D) => void) | null;
+  private _watchedFields: string[] = [];
+  private _watchListener: ((name: string) => void) | undefined;
 
   constructor(
     $f: HTMLFormElement,
@@ -30,9 +38,7 @@ export default class Form<D extends Record<string, any>> {
     }
     this._submitButton = $f.querySelector('[type=submit]');
     if (this._submitButton) {
-      this._els.forEach(($input) => {
-        $input.addEventListener('input', this._inputChangeHandler);
-      });
+      $f.addEventListener('input', this._inputChangeHandler);
     }
   }
 
@@ -46,10 +52,19 @@ export default class Form<D extends Record<string, any>> {
   };
 
   private _inputChangeHandler = (ev: Event): void => {
-    const vals = this._values;
     const $submit = this._submitButton;
     if ($submit) {
-      $submit.disabled = !this._els.some(($i) => $i.value !== vals[$i.name]);
+      const vals = this._values;
+      const formData = this.formData;
+      $submit.disabled =
+        Object.entries(vals).sort().toString() ===
+        Object.entries(this.formData).sort().toString();
+    }
+    if (this._watchListener) {
+      const name = getTarget<FormElement>(ev).name;
+      if (this._watchedFields.includes(name)) {
+        this._watchListener(name);
+      }
     }
   };
 
@@ -57,11 +72,29 @@ export default class Form<D extends Record<string, any>> {
     return this._submitButton;
   }
 
+  get elements() {
+    return this._els;
+  }
+
+  get formData() {
+    return Object.fromEntries(new FormData(this._f));
+  }
+
+  watchFields(fields: string[], fn: (name: string) => void): void {
+    this._watchedFields = fields;
+    this._watchListener = fn;
+  }
+
+  getFieldByName(name: string): FormElement | undefined {
+    return this._els.find((el) => el.name === name);
+  }
+
   setForm(v: D): void {
     const vals = this._values;
     this._els.forEach(($input) => {
       const name = $input.name;
       const value = v[name];
+      if (typeof value === 'undefined') return;
       switch ($input.nodeName.toLowerCase()) {
         case 'input':
           switch ($input.type) {
@@ -139,15 +172,18 @@ export default class Form<D extends Record<string, any>> {
     const f = this._f;
     f.reset();
     f.classList.remove('was-validated');
-    this._values = Object.fromEntries(new FormData(f));
-    getAllByTag<HTMLSelectElement>(f, 'select')?.forEach(($s) => {
-      if ($s.length === 0) {
-        switch ($s.dataset.options) {
-          case 'optionsVendedores':
-            populateVendedores($s);
-            break;
+    Promise.all(
+      getAllByTag<HTMLSelectElement>(f, 'select')?.map(($s) => {
+        if ($s.length === 0) {
+          switch ($s.dataset.options) {
+            case 'optionsVendedores':
+              return populateVendedores($s);
+              break;
+          }
         }
-      }
+      })
+    ).then(() => {
+      this._values = this.formData;
     });
   }
 
@@ -184,4 +220,5 @@ const populateVendedores = ($sel: HTMLSelectElement): Promise<void> =>
       o.textContent = v.nombre;
       $sel.add(o);
     });
+    $sel.selectedIndex = 0;
   });
