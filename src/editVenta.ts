@@ -13,11 +13,11 @@ export const editVenta: Handler<{ id: ID }> = ($el) => {
     ({ precioTotal, ...venta }) => {
       if (venta) {
         const isNew = !venta.id;
-
-        apiService<Venta, Venta>('ventas', {
+        console.log({ precioTotal, isNew, venta });
+        apiService<Venta, VentaYVendedor>('ventas', {
           op: isNew ? 'create' : 'update',
           id: venta.id,
-          venta,
+          data: venta,
         }).then((venta) => {
           if (venta) {
             if (isNew) {
@@ -39,7 +39,7 @@ export const editVenta: Handler<{ id: ID }> = ($el) => {
     render: ({ id }) => {
       form.resetForm();
       if (id) {
-        apiService<{}, Venta>('ventas', {
+        apiService<VentaYVendedor>('ventas', {
           op: 'get',
           id,
         }).then((venta) => {

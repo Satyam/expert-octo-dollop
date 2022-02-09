@@ -89,6 +89,9 @@ export default class Form<D extends Record<string, any>> {
           vals[name] = $input.innerHTML = value || '';
           break;
         case 'select':
+          Array.from(($input as HTMLSelectElement).options).forEach(($o) => {
+            $o.selected = $o.value === value;
+          });
           break;
       }
     });
@@ -173,6 +176,7 @@ const populateVendedores = ($sel: HTMLSelectElement): Promise<void> =>
   }).then((vs) => {
     const o = document.createElement('option');
     o.textContent = '---';
+    o.value = '';
     $sel.add(o);
     vs.sort(compareIgnoreCase('nombre')).forEach((v) => {
       const o = document.createElement('option');
