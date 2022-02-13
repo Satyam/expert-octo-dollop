@@ -38,3 +38,8 @@
 label {
   margin: 0.3rem 0;
 }
+
+.form-check .form-check-input {
+  margin-left: 0;
+  margin-right: 1em;
+}
