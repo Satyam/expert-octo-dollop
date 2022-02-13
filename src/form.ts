@@ -17,10 +17,10 @@ export default class Form<D extends Record<string, any>> {
   private _f: HTMLFormElement;
   private _els: FormElement[];
   private _submitButton: HTMLButtonElement | null;
-  private _values: Record<string, any> = {};
+  private _formData: string = '';
   private _submitHandler: ((values: D) => void) | null;
   private _watchedFields: string[] = [];
-  private _watchListener: ((name: string) => void) | undefined;
+  private _watchListener: ((name?: string) => void) | undefined;
 
   constructor(
     $f: HTMLFormElement,
@@ -54,20 +54,25 @@ export default class Form<D extends Record<string, any>> {
   private _inputChangeHandler = (ev: Event): void => {
     const $submit = this._submitButton;
     if ($submit) {
-      const vals = this._values;
-      const formData = this.formData;
       $submit.disabled =
-        Object.entries(vals).sort().toString() ===
-        Object.entries(this.formData).sort().toString();
+        this._formData ===
+        // @ts-ignore
+        new URLSearchParams(new FormData(this._f)).toString();
     }
-    if (this._watchListener) {
-      const name = getTarget<FormElement>(ev).name;
-      if (this._watchedFields.includes(name)) {
-        this._watchListener(name);
-      }
-    }
+    this._sendWatch(getTarget<FormElement>(ev).name);
   };
 
+  private _sendWatch(name?: string): void {
+    if (this._watchListener) {
+      if (name) {
+        if (this._watchedFields.includes(name)) {
+          this._watchListener(name);
+        }
+      } else {
+        this._watchListener();
+      }
+    }
+  }
   get submitButton() {
     return this._submitButton;
   }
@@ -76,21 +81,17 @@ export default class Form<D extends Record<string, any>> {
     return this._els;
   }
 
-  get formData() {
-    return Object.fromEntries(new FormData(this._f));
-  }
-
-  watchFields(fields: string[], fn: (name: string) => void): void {
+  watchFields(fields: string[], fn: (name?: string) => void): void {
     this._watchedFields = fields;
     this._watchListener = fn;
   }
 
   getFieldByName(name: string): FormElement | undefined {
-    return this._els.find((el) => el.name === name);
+    return this._f[name];
   }
 
   setForm(v: D): void {
-    const vals = this._values;
+    const vals: Record<string, any> = {};
     this._els.forEach(($input) => {
       const name = $input.name;
       const value = v[name];
@@ -128,6 +129,33 @@ export default class Form<D extends Record<string, any>> {
           break;
       }
     });
+    this._sendWatch();
+  }
+
+  private _getElValue($el: FormElement): any {
+    if ($el) {
+      switch ($el.nodeName.toLocaleLowerCase()) {
+        case 'input':
+          switch ($el.type) {
+            case 'date':
+              return new Date($el.value);
+            case 'checkbox':
+              return ($el as HTMLInputElement).checked;
+            case 'number':
+              return parseFloat($el.value);
+            default:
+              return $el.value;
+          }
+        case 'select':
+          return $el.value;
+        default:
+          return $el.value;
+      }
+    } else return undefined;
+  }
+
+  getFieldValue(name: string): any {
+    return this._getElValue(this._f[name]);
   }
 
   readForm(): D | undefined {
@@ -136,35 +164,9 @@ export default class Form<D extends Record<string, any>> {
     if (f.checkValidity()) {
       return this._els.reduce<D>((vals, $el) => {
         const name = $el.name;
-        let v: any;
-        switch ($el.nodeName.toLocaleLowerCase()) {
-          case 'input':
-            switch ($el.type) {
-              case 'date':
-                v = new Date($el.value);
-                break;
-              case 'checkbox':
-                v = ($el as HTMLInputElement).checked;
-                break;
-              case 'number':
-                v = parseFloat($el.value);
-                break;
-              default:
-                v = $el.value;
-                break;
-            }
-            break;
-          case 'select':
-            v = $el.value;
-            break;
-          default:
-            v = $el.value;
-            break;
-        }
-
         return {
           ...vals,
-          [name]: v,
+          [name]: this._getElValue($el),
         };
       }, {} as D);
     }
@@ -186,15 +188,15 @@ export default class Form<D extends Record<string, any>> {
         }
       })
     ).then(() => {
-      this._values = this.formData;
+      // @ts-ignore
+      this._formData = new URLSearchParams(new FormData(this._f)).toString();
     });
+    this._sendWatch();
   }
 
   destroy(): void {
     this.resetForm();
-    this._els.forEach(($input) => {
-      $input.removeEventListener('input', this._inputChangeHandler);
-    });
+    this._f.removeEventListener('input', this._inputChangeHandler);
     this._f.removeEventListener('submit', this._formSubmitHandler);
   }
 }
