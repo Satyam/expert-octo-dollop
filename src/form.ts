@@ -7,6 +7,16 @@ import {
   getTarget,
 } from 'gets';
 
+enum FieldTypes {
+  plainValue,
+  number,
+  currency,
+  checkbox,
+  date,
+  multiSelect,
+  multiCheck,
+}
+
 type FormElement =
   | HTMLInputElement
   | HTMLTextAreaElement
@@ -15,7 +25,7 @@ type FormElement =
 
 export default class Form<D extends Record<string, any>> {
   private _f: HTMLFormElement;
-  private _els: FormElement[];
+  private _fieldTypes: Record<string, FieldTypes>;
   private _submitButton: HTMLButtonElement | null;
   private _formData: string = '';
   private _submitHandler: ((values: D) => void) | null;
@@ -27,11 +37,43 @@ export default class Form<D extends Record<string, any>> {
     submitHandler: ((values: D) => void) | null = null
   ) {
     this._f = $f;
-    this._els = Array.from($f.elements).filter(
-      ($el) =>
-        $el.nodeName.toLocaleLowerCase() !== 'button' &&
-        $el.getAttribute('type') !== 'submit'
+    const els = Array.from($f.elements).filter(
+      ($el) => ($el as FormElement).name
     ) as FormElement[];
+
+    this._fieldTypes = els.reduce((types, $el) => {
+      const name = $el.name;
+      let type: FieldTypes = FieldTypes.plainValue;
+      switch ($el.tagName) {
+        case 'INPUT':
+          switch ($el.type) {
+            case 'number':
+              type = $el.dataset.currency
+                ? FieldTypes.currency
+                : FieldTypes.number;
+              break;
+            case 'date':
+              type = FieldTypes.date;
+              break;
+            case 'checkbox':
+              const $item = this._f.elements.namedItem(name);
+              type =
+                $item instanceof RadioNodeList && $item.length > 1
+                  ? FieldTypes.multiCheck
+                  : FieldTypes.checkbox;
+
+              break;
+          }
+          break;
+        case 'SELECT':
+          type = ($el as HTMLSelectElement).multiple
+            ? FieldTypes.multiSelect
+            : FieldTypes.plainValue;
+          break;
+      }
+      return { ...types, [name]: type };
+    }, {});
+
     this._submitHandler = submitHandler;
     if (submitHandler) {
       $f.addEventListener('submit', this._formSubmitHandler);
@@ -77,8 +119,8 @@ export default class Form<D extends Record<string, any>> {
     return this._submitButton;
   }
 
-  get elements() {
-    return this._els;
+  get fieldNames() {
+    return Object.keys(this._fieldTypes);
   }
 
   watchFields(fields: string[], fn: (name?: string) => void): void {
@@ -91,84 +133,94 @@ export default class Form<D extends Record<string, any>> {
   }
 
   setForm(v: D): void {
-    const vals: Record<string, any> = {};
-    this._els.forEach(($input) => {
-      const name = $input.name;
-      const value = v[name];
-      if (typeof value === 'undefined') return;
-      switch ($input.nodeName.toLowerCase()) {
-        case 'input':
-          switch ($input.type) {
-            case 'number':
-              if ($input.dataset.currency) {
-                vals[name] = $input.value = Number(value).toFixed(2);
-              } else {
-                vals[name] = $input.value = value;
-              }
-              break;
-            case 'date':
-              vals[name] = $input.value = (
-                value instanceof Date ? value.toISOString() : value
-              ).split('T')[0];
-              break;
-            case 'checkbox':
-              (<HTMLInputElement>$input).checked = !!value;
-              vals[name] = String(!!value);
-              break;
-            default:
-              vals[name] = $input.value = String(value);
+    for (const name in v) {
+      const value: any = v[name];
+      const $el = this._f[name];
+      switch (this._fieldTypes[name]) {
+        case FieldTypes.checkbox:
+          $el.checked = !!value;
+          break;
+        case FieldTypes.currency:
+          $el.value = Number(value).toFixed(2);
+          break;
+        case FieldTypes.checkbox:
+          break;
+        case FieldTypes.date:
+          $el.value = (
+            value instanceof Date ? value.toISOString() : value
+          ).split('T')[0];
+          break;
+        case FieldTypes.multiCheck:
+          const $item = this._f.elements.namedItem(name);
+          if ($item instanceof RadioNodeList) {
+            $item.forEach(($o) => {
+              ($o as HTMLInputElement).checked = value.includes(
+                ($o as HTMLInputElement).value
+              );
+            });
           }
+
           break;
-        case 'textarea':
-          vals[name] = $input.innerHTML = value || '';
-          break;
-        case 'select':
-          Array.from(($input as HTMLSelectElement).options).forEach(($o) => {
+        case FieldTypes.multiSelect:
+          Array.from(($el as HTMLSelectElement).options).forEach(($o) => {
             $o.selected = $o.value === value;
           });
           break;
+        case FieldTypes.number:
+          $el.value = String(value);
+          break;
+        case FieldTypes.plainValue:
+          $el.value = value;
+          break;
       }
-    });
+    }
+
     this._sendWatch();
   }
 
-  private _getElValue($el: FormElement): any {
+  getFieldValue(name: string): any {
+    const $el = this._f[name];
     if ($el) {
-      switch ($el.nodeName.toLocaleLowerCase()) {
-        case 'input':
-          switch ($el.type) {
-            case 'date':
-              return new Date($el.value);
-            case 'checkbox':
-              return ($el as HTMLInputElement).checked;
-            case 'number':
-              return parseFloat($el.value);
-            default:
-              return $el.value;
-          }
-        case 'select':
+      switch (this._fieldTypes[name]) {
+        case FieldTypes.plainValue:
           return $el.value;
+        case FieldTypes.checkbox:
+          return $el.checked;
+        case FieldTypes.date:
+          return new Date($el.value);
+        case FieldTypes.currency:
+        // Just a number:
+        case FieldTypes.number:
+          return parseFloat($el.value);
+        case FieldTypes.multiCheck: {
+          const $item = this._f.elements.namedItem(name);
+          if ($item instanceof RadioNodeList) {
+            return Array.from($item)
+              .filter(($i) => ($i as HTMLInputElement).checked)
+              .map(($i) => ($i as HTMLInputElement).value);
+          }
+        }
+        case FieldTypes.multiSelect:
+          return (Array.from($el.selectedOptions) as HTMLOptionElement[]).map(
+            ($o) => $o.value
+          );
         default:
           return $el.value;
       }
-    } else return undefined;
-  }
-
-  getFieldValue(name: string): any {
-    return this._getElValue(this._f[name]);
+    }
   }
 
   readForm(): D | undefined {
     const f = this._f;
     f.classList.add('was-validated');
     if (f.checkValidity()) {
-      return this._els.reduce<D>((vals, $el) => {
-        const name = $el.name;
-        return {
+      return Object.keys(this._fieldTypes).reduce<D>(
+        (vals, name) => ({
           ...vals,
-          [name]: this._getElValue($el),
-        };
-      }, {} as D);
+          [name]: this.getFieldValue(name),
+        }),
+        {} as D
+      );
     }
     return undefined;
   }
