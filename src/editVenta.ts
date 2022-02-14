@@ -35,12 +35,12 @@ export const editVenta: Handler<{ id: ID }> = ($el) => {
     }
   );
 
-  form.watchFields(['cantidad', 'precioUnitario'], (fieldName) => {
-    const fd = form.formData;
+  form.watchFields(['cantidad', 'precioUnitario'], () => {
     const precioTotal = form.getFieldByName('precioTotal');
     if (precioTotal)
       precioTotal.value = String(
-        (+fd.cantidad || 0) * (+fd.precioUnitario || 0)
+        (form.getFieldValue('cantidad') || 0) *
+          (form.getFieldValue('precioUnitario') || 0)
       );
   });
 
